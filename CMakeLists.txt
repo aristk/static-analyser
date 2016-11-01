@@ -6,33 +6,32 @@ project(staticAnalyzer)
 #set(CMAKE_CXX_STANDARD 11)
 
 # lex -o tokens.cpp tokens.l
-# TODO: somehow does not work... FIX
 # Create custom command for flex/lex (note the outputs)
 FIND_PACKAGE(FLEX REQUIRED)
-SET(FlexOutput ${CMAKE_SOURCE_DIR}/tokens.cpp)
+SET(FlexDir ${CMAKE_SOURCE_DIR}/parser)
+SET(FlexOutput ${FlexDir}/tokens.cpp)
 IF(FLEX_FOUND)
     ADD_CUSTOM_COMMAND(
             OUTPUT ${FlexOutput}
             COMMAND ${FLEX_EXECUTABLE}
                 -o ${FlexOutput}
-                ${CMAKE_SOURCE_DIR}/tokens.l
+            ${FlexDir}/tokens.l
     )
 ENDIF()
-
 SET_SOURCE_FILES_PROPERTIES(${FlexOutput} GENERATED)
 
 # bison -d -o parser.cpp parser.y
 FIND_PACKAGE(BISON REQUIRED)
-SET(BisonOutput ${CMAKE_SOURCE_DIR}/parser.cpp)
+SET(BisonDir ${CMAKE_SOURCE_DIR}/parser)
+SET(BisonOutput ${BisonDir}/parser.cpp)
 IF(BISON_FOUND)
     ADD_CUSTOM_COMMAND(
             OUTPUT ${BisonOutput}
             COMMAND ${BISON_EXECUTABLE}
-                -o ${BisonOutput}
-            ${CMAKE_SOURCE_DIR}/parser.y
+                -d -o ${BisonOutput}
+            ${BisonDir}/parser.y
     )
 ENDIF()
-
 SET_SOURCE_FILES_PROPERTIES(${BisonOutput} GENERATED)
 
 set(SOURCE_FILES main.cpp ${FlexOutput} ${BisonOutput})

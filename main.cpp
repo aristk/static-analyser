@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 using namespace std;
-#include "node.h"
+#include "parser/node.h"
 extern NBlock* programBlock;
 extern int yyparse();
 extern FILE *yyin;

@@ -1,0 +1,7 @@
+CMakeLists.txt:
+1. make flex/bison compatable with C++11
+2. clean up flex/bison generated files (rm parser/*pp)
+
+AST (node.h)
+1. remove LLVM deps
+2. add check that function was not defined previously
