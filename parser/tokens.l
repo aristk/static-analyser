@@ -15,7 +15,7 @@ extern "C" int yywrap() { }
 "//".*\n                ;
 "return"                return TOKEN(RETURN);
 "func"                  return TOKEN(FUNC);
-[a-zA-Z_][a-zA-Z.0-9_]*  SAVE_TOKEN; return TIDENTIFIER; // TODO: TDOT is included here to handle a.x (what is the best way to do that?)
+[a-zA-Z_][a-zA-Z0-9_]*  SAVE_TOKEN; return TIDENTIFIER;
 [0-9]+                  SAVE_TOKEN; return TINTEGER;
 "="                     return TOKEN(TEQUAL);
 "=="                    return TOKEN(TCEQ);

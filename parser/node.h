@@ -33,7 +33,9 @@ public:
 class NIdentifier : public NExpression {
 public:
     std::string name;
+    std::string field;
     NIdentifier(const std::string& name) : name(name) { }
+    NIdentifier(const std::string& name, const std::string& field) : name(name), field(field) { }
 //    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 

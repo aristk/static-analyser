@@ -83,6 +83,7 @@ func_decl_args : /*blank*/  { $$ = new VariableList(); }
 ;
 
 ident : TIDENTIFIER { $$ = new NIdentifier(*$1); delete $1; }
+| TIDENTIFIER TDOT TIDENTIFIER { $$ = new NIdentifier(*$1, *$3); delete $1; delete $3;}
 ;
 
 numeric : TINTEGER { $$ = new NInteger(atol($1->c_str())); delete $1; }
