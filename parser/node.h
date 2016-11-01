@@ -2,6 +2,9 @@
 #include <vector>
 //#include <llvm/Value.h>
 
+#ifndef _NODE_H_
+#define _NODE_H_
+
 class CodeGenContext;
 class NStatement;
 class NExpression;
@@ -111,3 +114,5 @@ public:
             id(id), arguments(arguments), block(block) { }
 //    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
+
+#endif

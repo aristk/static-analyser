@@ -68,7 +68,7 @@ stmt : var_decl | func_decl
 block : TLBRACE stmts TRBRACE { $$ = $2; }
 | TLBRACE TRBRACE { $$ = new NBlock(); }
 ;
-// TODO: all types are INT
+
 var_decl : ident { $$ = new NVariableDeclaration(*$1); }
 | ident TEQUAL expr { $$ = new NVariableDeclaration(*$1, $3); }
 ;

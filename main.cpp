@@ -1,7 +1,10 @@
 #include <iostream>
 #include <string>
-using namespace std;
 #include "parser/node.h"
+#include "analyzer/analyzer.hpp"
+
+using namespace std;
+
 extern NBlock* programBlock;
 extern int yyparse();
 extern FILE *yyin;
@@ -20,6 +23,11 @@ int main(int argc, char **argv)
     yyin = file; // now flex reads from file
     yyparse();
     fclose(file);
+
     std::cout << programBlock << std::endl;
+
+    // TODO: properly delete programBlock
+    StaticAnalyzer *analyzer = new NaiveStaticAnalyzer(programBlock);
+    delete(analyzer);
     return 0;
 }

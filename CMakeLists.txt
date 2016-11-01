@@ -3,7 +3,7 @@ project(staticAnalyzer)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
-#set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 11)
 
 # lex -o tokens.cpp tokens.l
 # Create custom command for flex/lex (note the outputs)
@@ -34,5 +34,7 @@ IF(BISON_FOUND)
 ENDIF()
 SET_SOURCE_FILES_PROPERTIES(${BisonOutput} GENERATED)
 
-set(SOURCE_FILES main.cpp ${FlexOutput} ${BisonOutput})
+include_directories(${BisonDir})
+
+set(SOURCE_FILES analyzer/analyzer.cpp main.cpp ${FlexOutput} ${BisonOutput})
 add_executable(staticAnalyzer ${SOURCE_FILES})
