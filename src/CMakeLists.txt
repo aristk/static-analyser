@@ -1,6 +1,4 @@
 
-#set(CMAKE_VERBOSE_MAKEFILE ON)
-
 set(CMAKE_CXX_STANDARD 11)
 
 # lex -o tokens.cpp tokens.l
