@@ -27,7 +27,13 @@ int main(int argc, char **argv)
     std::cout << programBlock << std::endl;
 
     // TODO: properly delete programBlock
-    StaticAnalyzer *analyzer = new NaiveStaticAnalyzer(programBlock);
+    StaticAnalyzer *analyzer;
+    try {
+         analyzer = new NaiveStaticAnalyzer(programBlock);
+    } catch(exception& e) {
+        cerr << "Exception caught:" << endl;
+        cerr << e.what() << endl;
+    }
     delete(analyzer);
     return 0;
 }

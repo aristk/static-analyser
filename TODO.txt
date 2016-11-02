@@ -1,13 +1,15 @@
 CMakeLists.txt:
-1. make flex/bison compatable with C++11
-2. clean up flex/bison generated files (rm parser/*pp)
-3. after changes in tokens.l, tokens.cpp are not regenerated
+1. clean up flex/bison generated files (rm parser/*pp)
+2. after changes in tokens.l, tokens.cpp are not regenerated
 
-AST (node.h)
-1. remove LLVM deps
-2. add check that function was not defined previously
+Parser:
+1. make flex/bison compatable with C++11
+2. AST (node.h):
+2.1 remove LLVM deps
+2.2. add check that function was not defined previously
 
 Language:
-1. Could we have nested function declarations?
-2. Could we have functions with same names?
-3. Could we use function before its declaration? (if not, it is close to C++).
+1. Could we have nested function declarations? Assume, no.
+2. Could we have functions with same names? Assume, no
+3. Could we use function before its declaration? Assume, no, it is close to
+[C++ way](http://stackoverflow.com/questions/29967202/why-cant-i-define-a-function-inside-another-function).
