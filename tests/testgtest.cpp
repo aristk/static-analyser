@@ -16,4 +16,12 @@ TEST(testCore, NegativeTests) {
     char* argv[] = { "", "test/global_var.myprog" };
 
     EXPECT_EQ(1, core(2, argv));
+
+    argv[1] = "test/assignment_in_arg.myprog" ;
+
+    EXPECT_EQ(1, core(2, argv));
+
+    argv[1] = "test/field_in_arg.myprog" ;
+
+    EXPECT_EQ(1, core(2, argv));
 }

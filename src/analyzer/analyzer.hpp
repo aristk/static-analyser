@@ -3,14 +3,6 @@
 
 using namespace std;
 
-class notNFunctionDeclaration: public exception
-{
-    virtual const char* what() const throw()
-    {
-        return "Root item is not NFunctionDeclaration.";
-    }
-};
-
 class StaticAnalyzer {
 public:
     virtual ~StaticAnalyzer() {}
