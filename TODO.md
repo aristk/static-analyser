@@ -18,5 +18,7 @@ Language:
 Checks:
 1. Check that function should return a value, if it used in assigning a variable.
 2. Check usage of structure vs INT, see following incorrect example:
+``
     Z = INT
     W = Z.V
+``

@@ -32,5 +32,7 @@ SET_SOURCE_FILES_PROPERTIES(${BisonOutput} GENERATED)
 
 include_directories(${BisonDir})
 
-set(SOURCE_FILES analyzer/analyzer.cpp main.cpp ${FlexOutput} ${BisonOutput})
-add_executable(staticAnalyzer ${SOURCE_FILES})
+set(SOURCE_FILES analyzer/analyzer.cpp core.cpp ${FlexOutput} ${BisonOutput})
+add_library(core ${SOURCE_FILES})
+add_executable(staticAnalyzer main.cpp)
+target_link_libraries(staticAnalyzer core)
