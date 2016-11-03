@@ -1,5 +1,8 @@
-#include "node.h"
 #include <vector>
+#include <map>
+
+#include "assignment.hpp"
+#include "node.h"
 
 using namespace std;
 
@@ -11,9 +14,18 @@ public:
 class FunctionInLanguage {
     vector<string> inputs;
     vector<string> outputs;
+    map<string, Assignment *> variables;
     string name;
 public:
     FunctionInLanguage(const string& name): name(name) {}
+
+    void addInput(NVariableDeclaration* NVariable);
+
+    void processBody(NBlock & block);
+
+    void processAssignment(NStatement *currentStatement);
+
+    ~FunctionInLanguage();
 };
 
 class NaiveStaticAnalyzer : public StaticAnalyzer {

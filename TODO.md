@@ -14,7 +14,15 @@ Language:
 3. Could we use function before its declaration? Assume, no, it is close to
 [C++ way](http://stackoverflow.com/questions/29967202/why-cant-i-define-a-function-inside-another-function).
 4. What is the type of x if we use x.y somewhere in the code? Assume, structure.
+    1. Which value will have X.Y if 
+     ``
+     X.Y = 1
+     Z = X
+     Z.Y = 2
+     ``
+     Assume 1. 
 5. We could not have assignments or field of structure as function argument.
+6. Variables names are char or could be strings?
 
 Checks:
 1. Check that function should return a value, if it used in assigning a variable.

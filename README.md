@@ -11,8 +11,9 @@ X.Y = Z
 X.Y = INT
 X = Y == Z
 X = Y != Z
-func <func>(X, Y, …)
-X = <func>(X, Y, …)
+func <func>(X, Y, …) // function declaration
+<func>(X, Y, …) // call of function without return
+X = <func>(X, Y, …) // call of function with return
 return X
 ```
 There is no dedicated variable declaration: if variable is not used previously, then it is just newly created. All 
