@@ -25,6 +25,10 @@ public:
 
     void processAssignment(NStatement *currentStatement);
 
+    Assignment * evaluateAssignment(NExpression *currentExpression);
+
+    string getVariableName(NIdentifier *currentIdentifier);
+
     ~FunctionInLanguage();
 };
 

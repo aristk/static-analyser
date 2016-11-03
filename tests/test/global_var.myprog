@@ -1,3 +1,1 @@
-func foo(a, b=2) {
- a.x = b
-}
+a = 2

@@ -55,27 +55,43 @@ void FunctionInLanguage::processAssignment(NStatement *currentStatement) {
     NVariableDeclaration *nAssignment = dynamic_cast<NVariableDeclaration *>(currentStatement);
     if (nAssignment != 0) {
         string name = nAssignment->id.name;
+        string nameWithField = getVariableName(&(nAssignment->id));
+        // dedicated case if input variable is a structure and having assignment to its field
         if (variables.count(name) > 0) {
+            // variable already exist in assignments
             Assignment *currentVariable = variables[name];
             string field = nAssignment->id.field;
-            // variable could be input, so could be affected
-            string nameWithField;
+            // variable could be input structure, so could be used as output
             if (field != "") {
-                nameWithField = name + "." + field;
-
                 // process input
                 if (currentVariable->getId() == 0) {
                     // TODO: make outputs a map
                     this->outputs.push_back(nameWithField);
                 }
             }
-            else {
-                nameWithField = name;
-            }
-            // TODO: incorrect assignment: we should assign rhs
-            variables[nameWithField] = currentVariable;
         }
+        variables[nameWithField] = evaluateAssignment(nAssignment->assignmentExpr);
     } else {
         // we have NMethodCall in currentStatement
     }
+}
+
+Assignment *FunctionInLanguage::evaluateAssignment(NExpression *currentExpression) {
+    NIdentifier *currentIdentifier = dynamic_cast<NIdentifier *>(currentExpression);
+
+    if (currentIdentifier != 0) {
+        // simple case: we have identifier in rhs
+        return variables[getVariableName(currentIdentifier)];
+    }
+    return nullptr;
+    // TODO: check other options
+}
+
+string FunctionInLanguage::getVariableName(NIdentifier *currentIdentifier) {
+    if (currentIdentifier->field != "") {
+        return currentIdentifier->name + "." + currentIdentifier->field;
+    } else {
+        return currentIdentifier->name;
+    }
+
 }
