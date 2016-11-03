@@ -16,6 +16,13 @@ class NotNVariableDeclaration: public exception
     }
 };
 
+class WrongBinaryOperator: public exception {
+    virtual const char* what() const throw()
+    {
+        return "Only == and != could be used.";
+    }
+};
+
 class WrongFunctionArgument: public exception
 {
     virtual const char* what() const throw()

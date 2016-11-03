@@ -1,6 +1,10 @@
 #include "analyzer.hpp"
 #include "exceptions.hpp"
 
+// TODO: import does not work here... Find a better way
+#define TCEQ 260
+#define TCNE 261
+
 using namespace std;
 
 NaiveStaticAnalyzer::NaiveStaticAnalyzer(NBlock *programBlock) {
@@ -19,12 +23,10 @@ NaiveStaticAnalyzer::NaiveStaticAnalyzer(NBlock *programBlock) {
         this->functions.push_back(new FunctionInLanguage(NFunction->id.name));
         FunctionInLanguage *currentFunction = this->functions.back();
 
-        // TODO: add inputs, analyze what is an output
-
         // add input variable
         for(auto j : NFunction->arguments) {
             // note that all inputs are of NVariableDeclaration type by parsing
-            // TODO: add assertion with this check
+            // TODO: add assertion with check that j is of NVariableDeclaration type
             currentFunction->addInput(j);
         }
         currentFunction->processBody(NFunction->block);
@@ -55,34 +57,65 @@ void FunctionInLanguage::processAssignment(NStatement *currentStatement) {
     NVariableDeclaration *nAssignment = dynamic_cast<NVariableDeclaration *>(currentStatement);
     if (nAssignment != 0) {
         string name = nAssignment->id.name;
+        string field = nAssignment->id.field;
         string nameWithField = getVariableName(&(nAssignment->id));
         // dedicated case if input variable is a structure and having assignment to its field
-        if (variables.count(name) > 0) {
-            // variable already exist in assignments
-            Assignment *currentVariable = variables[name];
-            string field = nAssignment->id.field;
-            // variable could be input structure, so could be used as output
-            if (field != "") {
-                // process input
-                if (currentVariable->getId() == 0) {
-                    // TODO: make outputs a map
-                    this->outputs.push_back(nameWithField);
-                }
-            }
+        if (checkIfIsInput(&(nAssignment->id)) && field != "") {
+            // TODO: make outputs a map
+            this->outputs.push_back(nameWithField);
         }
         variables[nameWithField] = evaluateAssignment(nAssignment->assignmentExpr);
     } else {
         // we have NMethodCall in currentStatement
     }
+    /* TODO: case of
+     *  X.Y = Z
+     *  W.S = V
+     *  X = W
+     * when X is input variable should be accurately checked
+     */
+}
+
+Assignment *FunctionInLanguage::evaluateAssignment(NIdentifier *currentIdentifier) {
+    // simple case: we have identifier in rhs
+    string field = currentIdentifier->field;
+    string name = currentIdentifier->name;
+    string fullName = getVariableName(currentIdentifier);
+    // if name is input and structure, init as input
+    if (variables.count(fullName) == 0 && checkIfIsInput(currentIdentifier) && field != "") {
+        this->variables.emplace(fullName, new InputVariable(fullName));
+    }
+    return variables[fullName];
 }
 
 Assignment *FunctionInLanguage::evaluateAssignment(NExpression *currentExpression) {
     NIdentifier *currentIdentifier = dynamic_cast<NIdentifier *>(currentExpression);
 
     if (currentIdentifier != 0) {
-        // simple case: we have identifier in rhs
-        return variables[getVariableName(currentIdentifier)];
+        return evaluateAssignment(currentIdentifier);
     }
+
+    NBinaryOperator *currentOp = dynamic_cast<NBinaryOperator *>(currentExpression);
+
+    if (currentOp != 0) {
+        Assignment *lhs = evaluateAssignment(&(currentOp->lhs));
+        Assignment *rhs = evaluateAssignment(&(currentOp->rhs));
+        if (lhs->isEqualTo(rhs)) {
+            // TCEQ from parser.hpp is equivalent to ==
+            // TODO: it is better way to check?
+            if (currentOp->op == TCEQ) {
+                return new IntegerAssignment(1);
+            } else if (currentOp->op == TCNE){
+                // case of !=
+                return new IntegerAssignment(0);
+            } else {
+                throw WrongBinaryOperator();
+            }
+        } else {
+            return new LogicAssignment(currentOp->op, lhs, rhs);
+        }
+    }
+
     return nullptr;
     // TODO: check other options
 }
@@ -94,4 +127,17 @@ string FunctionInLanguage::getVariableName(NIdentifier *currentIdentifier) {
         return currentIdentifier->name;
     }
 
+}
+
+bool FunctionInLanguage::checkIfIsInput(NIdentifier *currentIdentifier) {
+    string name = currentIdentifier->name;
+
+    if (variables.count(name) > 0) {
+        Assignment *currentVariable = variables[name];
+        // process input
+        if (currentVariable != 0 && currentVariable->getId() == 0) {
+            return true;
+        }
+    }
+    return false;
 }

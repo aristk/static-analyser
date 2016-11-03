@@ -15,9 +15,9 @@ class FunctionInLanguage {
     vector<string> inputs;
     vector<string> outputs;
     map<string, Assignment *> variables;
-    string name;
+    string nameOfFunction;
 public:
-    FunctionInLanguage(const string& name): name(name) {}
+    FunctionInLanguage(const string& name): nameOfFunction(name) {}
 
     void addInput(NVariableDeclaration* NVariable);
 
@@ -26,6 +26,9 @@ public:
     void processAssignment(NStatement *currentStatement);
 
     Assignment * evaluateAssignment(NExpression *currentExpression);
+    Assignment * evaluateAssignment(NIdentifier *currentExpression);
+
+    bool checkIfIsInput(NIdentifier *currentIdentifier);
 
     string getVariableName(NIdentifier *currentIdentifier);
 
