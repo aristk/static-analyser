@@ -53,34 +53,57 @@ FunctionInLanguage::~FunctionInLanguage() {
     // TODO: use shared_ptr for deleting Assignments
 }
 
-void FunctionInLanguage::processAssignment(NStatement *currentStatement) {
-    NVariableDeclaration *nAssignment = dynamic_cast<NVariableDeclaration *>(currentStatement);
-    if (nAssignment != 0) {
-        string name = nAssignment->id.name;
-        string field = nAssignment->id.field;
-        string nameWithField = getVariableName(&(nAssignment->id));
-        // dedicated case if input variable is a structure and having assignment to its field
-        if (checkIfIsInput(&(nAssignment->id)) && field != "") {
-            // TODO: make outputs a map
-            this->outputs.push_back(nameWithField);
-        }
-        variables[nameWithField] = evaluateAssignment(nAssignment->assignmentExpr);
-        /* TODO: case of
-        *  X.Y = Z
-        *  W.S = V
-        *  X = W
-        * when X is input variable should be accurately checked
-        */
+void FunctionInLanguage::processAssignment(NVariableDeclaration *nAssignment) {
+    string name = nAssignment->id.name;
+    string field = nAssignment->id.field;
+    string nameWithField = getVariableName(&(nAssignment->id));
+    // dedicated case if input variable is a structure and having assignment to its field
+    if (checkIfIsInput(&(nAssignment->id)) && field != "") {
+        // TODO: make outputs a map
+        this->outputs.push_back(nameWithField);
     }
+    variables[nameWithField] = evaluateAssignment(nAssignment->assignmentExpr);
+    /* TODO: case of
+    *  X.Y = Z
+    *  W.S = V
+    *  X = W
+    * when X is input variable should be accurately checked
+    */
+}
+
+void FunctionInLanguage::processAssignment(NStatement *currentStatement) {
+    // TODO: get rid of dynamic_cast, as alternative call processAssignment from NStatement
+    NVariableDeclaration *nAssignment = dynamic_cast<NVariableDeclaration *>(currentStatement);
+
+    if (nAssignment != 0) {
+        processAssignment(nAssignment);
+        return;
+    }
+
 
     NReturnStatement *nReturnStatement = dynamic_cast<NReturnStatement *>(currentStatement);
 
     if (nReturnStatement != 0) {
         string nameWithField = getVariableName(&(nReturnStatement->variable));
         this->outputs.push_back(nameWithField);
+        return;
     }
 
-    // TODO: check NMethodCall as currentStatement + other options
+    NExpressionStatement *nExpressionStatement = dynamic_cast<NExpressionStatement *>(currentStatement);
+
+    // here it could be only method call
+    // TODO: change parser to avoid addition convention
+    if(nExpressionStatement !=0 ) {
+        NMethodCall *nMethodCall = dynamic_cast<NMethodCall *>(&(nExpressionStatement->expression));
+
+        // call without return
+        if(nMethodCall !=0 ) {
+            // TODO: for substitution we need access to all functions from StaticAnalyzer
+        }
+        return;
+    }
+
+    throw WrongFunctionStatement();
 }
 
 Assignment *FunctionInLanguage::evaluateAssignment(NIdentifier *currentIdentifier) {

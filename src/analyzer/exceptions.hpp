@@ -23,8 +23,14 @@ class WrongBinaryOperator: public exception {
     }
 };
 
-class WrongFunctionArgument: public exception
-{
+class WrongFunctionStatement: public exception {
+    virtual const char* what() const throw()
+    {
+        return "In function we could use only variable assignment or procedure call";
+    }
+};
+
+class WrongFunctionArgument: public exception {
     virtual const char* what() const throw()
     {
         return "Argument of the function is not single variable.";

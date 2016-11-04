@@ -23,6 +23,7 @@ public:
 
     void processBody(NBlock & block);
 
+    void processAssignment(NVariableDeclaration *nAssignment);
     void processAssignment(NStatement *currentStatement);
 
     Assignment * evaluateAssignment(NExpression *currentExpression);
