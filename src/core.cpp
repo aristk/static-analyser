@@ -25,7 +25,7 @@ int core(int argc, char **argv)
     yyparse();
     fclose(file);
 
-    std::cout << programBlock << std::endl;
+//    std::cout << programBlock << std::endl;
 
     // TODO: properly delete programBlock
     StaticAnalyzer *analyzer = NULL;

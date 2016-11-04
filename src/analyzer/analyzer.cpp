@@ -8,70 +8,40 @@
 using namespace std;
 
 NaiveStaticAnalyzer::NaiveStaticAnalyzer(NBlock *programBlock) {
-
-    // TODO: implement better verbosity usage
-    cout << "We are in NaiveStaticAnalyzer constructor" << endl;
     for(auto i : programBlock->statements) {
         // check that all root items are NFunctionDeclaration
         // TODO: usage of dynamic_cast is not good idea
-        NFunctionDeclaration *NFunction = dynamic_cast<NFunctionDeclaration*>(i);
-        if (NFunction == 0) {
+        NFunctionDeclaration *nFunction = dynamic_cast<NFunctionDeclaration*>(i);
+        if (nFunction == 0) {
             throw notNFunctionDeclaration();
         }
 
         // TODO: look like better way is to all follows in construct of FunctionInLanguage
-        this->functions.push_back(new FunctionInLanguage(NFunction->id.name));
-        FunctionInLanguage *currentFunction = this->functions.back();
+        currentFunction = new FunctionInLanguage(nFunction->id.name);
+        functions.push_back(currentFunction);
 
         // add input variable
-        for(auto j : NFunction->arguments) {
+        for(auto j : nFunction->arguments) {
             // note that all inputs are of NVariableDeclaration type by parsing
             // TODO: add assertion with check that j is of NVariableDeclaration type
             currentFunction->addInput(j);
         }
-        currentFunction->processBody(NFunction->block);
+
+        processBody(nFunction->block);
     }
 }
 
-void FunctionInLanguage::addInput(NVariableDeclaration* NVariable) {
-    if (NVariable->id.field != "" || NVariable->assignmentExpr != NULL) {
-        throw WrongFunctionArgument();
-    }
-    string name = NVariable->id.name;
-    this->inputs.push_back(name);
-    this->variables.emplace(name, new InputVariable(name));
-}
-
-void FunctionInLanguage::processBody(NBlock &block) {
+void NaiveStaticAnalyzer::processBody(NBlock &block) {
     for(auto i : block.statements) {
-        // could be NVariableDeclaration or NExpressionStatement with NMethodCall
-        this->processAssignment(i);
+        // could be
+        // 1. NVariableDeclaration or
+        // 2. NReturnStatement or
+        // 3. NExpressionStatement with NMethodCall
+        processAssignment(i);
     }
 }
 
-FunctionInLanguage::~FunctionInLanguage() {
-    // TODO: use shared_ptr for deleting Assignments
-}
-
-void FunctionInLanguage::processAssignment(NVariableDeclaration *nAssignment) {
-    string name = nAssignment->id.name;
-    string field = nAssignment->id.field;
-    string nameWithField = getVariableName(&(nAssignment->id));
-    // dedicated case if input variable is a structure and having assignment to its field
-    if (checkIfIsInput(&(nAssignment->id)) && field != "") {
-        // TODO: make outputs a map
-        this->outputs.push_back(nameWithField);
-    }
-    variables[nameWithField] = evaluateAssignment(nAssignment->assignmentExpr);
-    /* TODO: case of
-    *  X.Y = Z
-    *  W.S = V
-    *  X = W
-    * when X is input variable should be accurately checked
-    */
-}
-
-void FunctionInLanguage::processAssignment(NStatement *currentStatement) {
+void NaiveStaticAnalyzer::processAssignment(NStatement *currentStatement) {
     // TODO: get rid of dynamic_cast, as alternative call processAssignment from NStatement
     NVariableDeclaration *nAssignment = dynamic_cast<NVariableDeclaration *>(currentStatement);
 
@@ -80,12 +50,11 @@ void FunctionInLanguage::processAssignment(NStatement *currentStatement) {
         return;
     }
 
-
     NReturnStatement *nReturnStatement = dynamic_cast<NReturnStatement *>(currentStatement);
 
     if (nReturnStatement != 0) {
-        string nameWithField = getVariableName(&(nReturnStatement->variable));
-        this->outputs.push_back(nameWithField);
+        string nameWithField = currentFunction->getVariableName(&(nReturnStatement->variable));
+        currentFunction->addOutput(nameWithField);
         return;
     }
 
@@ -106,6 +75,37 @@ void FunctionInLanguage::processAssignment(NStatement *currentStatement) {
     throw WrongFunctionStatement();
 }
 
+void NaiveStaticAnalyzer::processAssignment(NVariableDeclaration *nAssignment) {
+    string name = nAssignment->id.name;
+    string field = nAssignment->id.field;
+    string nameWithField = currentFunction->getVariableName(&(nAssignment->id));
+    // dedicated case if input variable is a structure and having assignment to its field
+    if (currentFunction->checkIfIsInput(&(nAssignment->id)) && field != "") {
+        currentFunction->addOutput(nameWithField);
+    }
+
+    currentFunction->addVariable(nameWithField, currentFunction->evaluateAssignment(nAssignment->assignmentExpr));
+    /* TODO: case of
+    *  X.Y = Z
+    *  W.S = V
+    *  X = W
+    * when X is input variable should be accurately checked
+    */
+}
+
+void FunctionInLanguage::addInput(NVariableDeclaration* NVariable) {
+    if (NVariable->id.field != "" || NVariable->assignmentExpr != NULL) {
+        throw WrongFunctionArgument();
+    }
+    string name = NVariable->id.name;
+    inputs.push_back(name);
+    variables.emplace(name, new InputVariable(name));
+}
+
+FunctionInLanguage::~FunctionInLanguage() {
+    // TODO: use shared_ptr for deleting Assignments
+}
+
 Assignment *FunctionInLanguage::evaluateAssignment(NIdentifier *currentIdentifier) {
     // simple case: we have identifier in rhs
     string field = currentIdentifier->field;
@@ -113,7 +113,7 @@ Assignment *FunctionInLanguage::evaluateAssignment(NIdentifier *currentIdentifie
     string fullName = getVariableName(currentIdentifier);
     // if name is input and structure, init as input
     if (variables.count(fullName) == 0 && checkIfIsInput(currentIdentifier) && field != "") {
-        this->variables.emplace(fullName, new InputVariable(fullName));
+        variables.emplace(fullName, new InputVariable(fullName));
     }
     return variables[fullName];
 }
@@ -171,3 +171,13 @@ bool FunctionInLanguage::checkIfIsInput(NIdentifier *currentIdentifier) {
     }
     return false;
 }
+
+void FunctionInLanguage::addOutput(string nameWithField) {
+    // TODO: make outputs a map
+    outputs.push_back(nameWithField);
+}
+
+void FunctionInLanguage::addVariable(string name, Assignment *value) {
+    variables[name] = value;
+}
+

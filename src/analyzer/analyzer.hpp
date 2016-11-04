@@ -11,20 +11,19 @@ public:
     virtual ~StaticAnalyzer() {}
 };
 
-class FunctionInLanguage {
+class FunctionInLanguage : public Assignment {
     vector<string> inputs;
     vector<string> outputs;
     map<string, Assignment *> variables;
     string nameOfFunction;
 public:
-    FunctionInLanguage(const string& name): nameOfFunction(name) {}
+    FunctionInLanguage(const string& name): Assignment(4), nameOfFunction(name) {}
 
     void addInput(NVariableDeclaration* NVariable);
 
-    void processBody(NBlock & block);
+    void addOutput(string nameWithField);
 
-    void processAssignment(NVariableDeclaration *nAssignment);
-    void processAssignment(NStatement *currentStatement);
+    void addVariable(string name, Assignment *value);
 
     Assignment * evaluateAssignment(NExpression *currentExpression);
     Assignment * evaluateAssignment(NIdentifier *currentExpression);
@@ -37,11 +36,17 @@ public:
 };
 
 class NaiveStaticAnalyzer : public StaticAnalyzer {
-    vector<FunctionInLanguage*> functions;
+    vector<Assignment*> functions;
+    FunctionInLanguage *currentFunction;
 public:
     NaiveStaticAnalyzer(NBlock* programBlock);
+
+    void processBody(NBlock & block);
+
+    void processAssignment(NStatement *currentStatement);
+    void processAssignment(NVariableDeclaration *nAssignment);
+
     virtual ~NaiveStaticAnalyzer() {
-        for(auto i : functions)
-            delete(i);
+        // TODO: use smart pointers as functions
     }
 };

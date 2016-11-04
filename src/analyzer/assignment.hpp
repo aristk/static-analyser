@@ -16,7 +16,7 @@ public:
     }
 
     bool isEqualId(Assignment *rhs) {
-        if (this->id == rhs->getId()) {
+        if (id == rhs->getId()) {
             return true;
         }
         return false;
@@ -38,7 +38,7 @@ public:
     InputVariable(string x) : Assignment(0), name(x) {}
 
     bool isEqualTo(InputVariable *rhs) {
-        if (isEqualId(rhs) && this->name == rhs->getName()) {
+        if (isEqualId(rhs) && name == rhs->getName()) {
             return true;
         }
         return false;
@@ -55,7 +55,7 @@ public:
     }
 
     bool isEqualTo(IntegerAssignment *rhs) {
-        if (isEqualId(rhs) && this->value == rhs->getValue()) {
+        if (isEqualId(rhs) && value == rhs->getValue()) {
             return true;
         }
         return false;
