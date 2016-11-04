@@ -1,7 +1,7 @@
 #include "analyzer.hpp"
 #include "exceptions.hpp"
 
-// TODO: import does not work here... Find a better way
+// TODO: import does not work here... Find a better way, as example, modifying the parser
 #define TCEQ 260
 #define TCNE 261
 
@@ -65,15 +65,22 @@ void FunctionInLanguage::processAssignment(NStatement *currentStatement) {
             this->outputs.push_back(nameWithField);
         }
         variables[nameWithField] = evaluateAssignment(nAssignment->assignmentExpr);
-    } else {
-        // we have NMethodCall in currentStatement
+        /* TODO: case of
+        *  X.Y = Z
+        *  W.S = V
+        *  X = W
+        * when X is input variable should be accurately checked
+        */
     }
-    /* TODO: case of
-     *  X.Y = Z
-     *  W.S = V
-     *  X = W
-     * when X is input variable should be accurately checked
-     */
+
+    NReturnStatement *nReturnStatement = dynamic_cast<NReturnStatement *>(currentStatement);
+
+    if (nReturnStatement != 0) {
+        string nameWithField = getVariableName(&(nReturnStatement->variable));
+        this->outputs.push_back(nameWithField);
+    }
+
+    // TODO: check NMethodCall as currentStatement + other options
 }
 
 Assignment *FunctionInLanguage::evaluateAssignment(NIdentifier *currentIdentifier) {
