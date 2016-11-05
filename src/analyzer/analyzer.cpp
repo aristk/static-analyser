@@ -1,13 +1,13 @@
 #include "analyzer.hpp"
 #include "exceptions.hpp"
 
-// TODO: import does not work here... Find a better way, as example, modifying the parser
-#define TCEQ 260
-#define TCNE 261
+#include <string>
+
+extern const std::string tokenIdToName(int value);
 
 using namespace std;
 
-NaiveStaticAnalyzer::NaiveStaticAnalyzer(NBlock *programBlock) {
+SymbolicStaticAnalyzer::SymbolicStaticAnalyzer(NBlock *programBlock) {
     for(auto i : programBlock->statements) {
         // check that all root items are NFunctionDeclaration
         // TODO: usage of dynamic_cast is not good idea
@@ -16,8 +16,8 @@ NaiveStaticAnalyzer::NaiveStaticAnalyzer(NBlock *programBlock) {
             throw notNFunctionDeclaration();
         }
 
-        // TODO: look like better way is to all follows in construct of FunctionInLanguage
-        currentFunction = new FunctionInLanguage(nFunction->id.name);
+        // TODO: look like better way is to all follows in construct of FunctionDeclaration
+        currentFunction = new FunctionDeclaration(nFunction->id.name);
         functions.push_back(currentFunction);
 
         // add input variable
@@ -31,7 +31,7 @@ NaiveStaticAnalyzer::NaiveStaticAnalyzer(NBlock *programBlock) {
     }
 }
 
-void NaiveStaticAnalyzer::processBody(NBlock &block) {
+void SymbolicStaticAnalyzer::processBody(NBlock &block) {
     for(auto i : block.statements) {
         // could be
         // 1. NVariableDeclaration or
@@ -41,7 +41,7 @@ void NaiveStaticAnalyzer::processBody(NBlock &block) {
     }
 }
 
-void NaiveStaticAnalyzer::processAssignment(NStatement *currentStatement) {
+void SymbolicStaticAnalyzer::processAssignment(NStatement *currentStatement) {
     // TODO: get rid of dynamic_cast, as alternative call processAssignment from NStatement
     NVariableDeclaration *nAssignment = dynamic_cast<NVariableDeclaration *>(currentStatement);
 
@@ -67,7 +67,17 @@ void NaiveStaticAnalyzer::processAssignment(NStatement *currentStatement) {
 
         // call without return
         if(nMethodCall !=0 ) {
-            // TODO: for substitution we need access to all functions from StaticAnalyzer
+            string callName = nMethodCall->id.name;
+            FunctionDeclaration *pFunctionDeclaration;
+            // TODO: better structure for functions (to have better search)?
+            for(auto i : functions)
+            {
+                if (i->getName() == callName) {
+                    pFunctionDeclaration = i;
+                    break;
+                }
+            }
+
         }
         return;
     }
@@ -75,7 +85,7 @@ void NaiveStaticAnalyzer::processAssignment(NStatement *currentStatement) {
     throw WrongFunctionStatement();
 }
 
-void NaiveStaticAnalyzer::processAssignment(NVariableDeclaration *nAssignment) {
+void SymbolicStaticAnalyzer::processAssignment(NVariableDeclaration *nAssignment) {
     string name = nAssignment->id.name;
     string field = nAssignment->id.field;
     string nameWithField = currentFunction->getVariableName(&(nAssignment->id));
@@ -93,7 +103,13 @@ void NaiveStaticAnalyzer::processAssignment(NVariableDeclaration *nAssignment) {
     */
 }
 
-void FunctionInLanguage::addInput(NVariableDeclaration* NVariable) {
+Assignment *SymbolicStaticAnalyzer::substitute(FunctionDeclaration *function, ExpressionList arguments) {
+    for(auto i : arguments) {
+
+    }
+}
+
+void FunctionDeclaration::addInput(NVariableDeclaration* NVariable) {
     if (NVariable->id.field != "" || NVariable->assignmentExpr != NULL) {
         throw WrongFunctionArgument();
     }
@@ -102,11 +118,11 @@ void FunctionInLanguage::addInput(NVariableDeclaration* NVariable) {
     variables.emplace(name, new InputVariable(name));
 }
 
-FunctionInLanguage::~FunctionInLanguage() {
+FunctionDeclaration::~FunctionDeclaration() {
     // TODO: use shared_ptr for deleting Assignments
 }
 
-Assignment *FunctionInLanguage::evaluateAssignment(NIdentifier *currentIdentifier) {
+Assignment *FunctionDeclaration::evaluateAssignment(NIdentifier *currentIdentifier) {
     // simple case: we have identifier in rhs
     string field = currentIdentifier->field;
     string name = currentIdentifier->name;
@@ -118,7 +134,7 @@ Assignment *FunctionInLanguage::evaluateAssignment(NIdentifier *currentIdentifie
     return variables[fullName];
 }
 
-Assignment *FunctionInLanguage::evaluateAssignment(NExpression *currentExpression) {
+Assignment *FunctionDeclaration::evaluateAssignment(NExpression *currentExpression) {
     NIdentifier *currentIdentifier = dynamic_cast<NIdentifier *>(currentExpression);
 
     if (currentIdentifier != 0) {
@@ -130,19 +146,18 @@ Assignment *FunctionInLanguage::evaluateAssignment(NExpression *currentExpressio
     if (currentOp != 0) {
         Assignment *lhs = evaluateAssignment(&(currentOp->lhs));
         Assignment *rhs = evaluateAssignment(&(currentOp->rhs));
+        const string op = tokenIdToName(currentOp->op);
         if (lhs->isEqualTo(rhs)) {
-            // TCEQ from parser.hpp is equivalent to ==
-            // TODO: it is better way to check?
-            if (currentOp->op == TCEQ) {
+            if (op == "==") {
                 return new IntegerAssignment(1);
-            } else if (currentOp->op == TCNE){
+            } else if (op == "!="){
                 // case of !=
                 return new IntegerAssignment(0);
             } else {
                 throw WrongBinaryOperator();
             }
         } else {
-            return new LogicAssignment(currentOp->op, lhs, rhs);
+            return new LogicAssignment(op, lhs, rhs);
         }
     }
 
@@ -150,7 +165,7 @@ Assignment *FunctionInLanguage::evaluateAssignment(NExpression *currentExpressio
     // TODO: check other options
 }
 
-string FunctionInLanguage::getVariableName(NIdentifier *currentIdentifier) {
+string FunctionDeclaration::getVariableName(NIdentifier *currentIdentifier) {
     if (currentIdentifier->field != "") {
         return currentIdentifier->name + "." + currentIdentifier->field;
     } else {
@@ -159,7 +174,7 @@ string FunctionInLanguage::getVariableName(NIdentifier *currentIdentifier) {
 
 }
 
-bool FunctionInLanguage::checkIfIsInput(NIdentifier *currentIdentifier) {
+bool FunctionDeclaration::checkIfIsInput(NIdentifier *currentIdentifier) {
     string name = currentIdentifier->name;
 
     if (variables.count(name) > 0) {
@@ -172,12 +187,12 @@ bool FunctionInLanguage::checkIfIsInput(NIdentifier *currentIdentifier) {
     return false;
 }
 
-void FunctionInLanguage::addOutput(string nameWithField) {
+void FunctionDeclaration::addOutput(string nameWithField) {
     // TODO: make outputs a map
     outputs.push_back(nameWithField);
 }
 
-void FunctionInLanguage::addVariable(string name, Assignment *value) {
+void FunctionDeclaration::addVariable(string name, Assignment *value) {
     variables[name] = value;
 }
 

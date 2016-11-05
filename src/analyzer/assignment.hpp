@@ -63,11 +63,11 @@ public:
 };
 
 class LogicAssignment: public Assignment {
-    int logicOperator;
+    string logicOperator;
     Assignment *lhs;
     Assignment *rhs;
 public:
-    LogicAssignment(int logicOperator, Assignment *lhs, Assignment *rhs) :
+    LogicAssignment(const string &logicOperator, Assignment *lhs, Assignment *rhs) :
             Assignment(2), logicOperator(logicOperator), lhs(lhs), rhs(rhs) {}
 };
 

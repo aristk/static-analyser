@@ -3,6 +3,16 @@
 #include "node.h"
 #include "parser.hpp"
 
+const std::string tokenIdToName(int value) {
+    switch(value) {
+    case TCEQ:
+        return "==";
+    case TCNE:
+        return "!=";
+    default:
+        return "";
+    }
+}
 
 #define SAVE_TOKEN yylval.string = new std::string(yytext, yyleng)
 #define TOKEN(t) (yylval.token = t)

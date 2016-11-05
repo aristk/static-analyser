@@ -30,7 +30,7 @@ int core(int argc, char **argv)
     // TODO: properly delete programBlock
     StaticAnalyzer *analyzer = NULL;
     try {
-         analyzer = new NaiveStaticAnalyzer(programBlock);
+         analyzer = new SymbolicStaticAnalyzer(programBlock);
     } catch(exception& e) {
         cerr << "Exception caught:" << endl;
         cerr << e.what() << endl;
