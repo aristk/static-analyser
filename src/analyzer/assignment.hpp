@@ -28,7 +28,6 @@ public:
     virtual ~Assignment() {}
 };
 
-// CLion bug: cannot rename as refactor action: cannot found occurrences
 class InputVariable: public Assignment {
     string name;
 public:

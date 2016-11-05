@@ -1,7 +1,6 @@
 #include "analyzer.hpp"
 #include "exceptions.hpp"
 
-#include <string>
 
 extern const std::string tokenIdToName(int value);
 
@@ -77,7 +76,7 @@ void SymbolicStaticAnalyzer::processAssignment(NStatement *currentStatement) {
                     break;
                 }
             }
-
+            currentFunction->substitute(pFunctionDeclaration, nMethodCall->arguments);
         }
         return;
     }
@@ -101,12 +100,6 @@ void SymbolicStaticAnalyzer::processAssignment(NVariableDeclaration *nAssignment
     *  X = W
     * when X is input variable should be accurately checked
     */
-}
-
-Assignment *SymbolicStaticAnalyzer::substitute(FunctionDeclaration *function, ExpressionList arguments) {
-    for(auto i : arguments) {
-
-    }
 }
 
 void FunctionDeclaration::addInput(NVariableDeclaration* NVariable) {
@@ -161,6 +154,12 @@ Assignment *FunctionDeclaration::evaluateAssignment(NExpression *currentExpressi
         }
     }
 
+    NInteger *currentInt = dynamic_cast<NInteger *>(currentExpression);
+
+    if (currentInt != 0) {
+        return new IntegerAssignment(currentInt->value);
+    }
+
     return nullptr;
     // TODO: check other options
 }
@@ -194,5 +193,35 @@ void FunctionDeclaration::addOutput(string nameWithField) {
 
 void FunctionDeclaration::addVariable(string name, Assignment *value) {
     variables[name] = value;
+}
+
+void FunctionDeclaration::substitute(FunctionDeclaration *function, ExpressionList arguments) {
+    for(auto i : function->getOutput()) {
+        pair<string, Assignment*> substitution = function->evaluateFunction(i, arguments);
+        variables[substitution.first] = substitution.second;
+    }
+}
+
+pair<string, Assignment *> FunctionDeclaration::evaluateFunction(string output, ExpressionList arguments) {
+    Assignment *outputValue = variables[output];
+    map<string, NExpression *> mapOfInputs = mapInputs(arguments);
+
+    // input value
+    if(outputValue->getId() == 0) {
+        InputVariable *inputVariable = dynamic_cast<InputVariable*>(outputValue);
+        Assignment *newValue = evaluateAssignment(mapOfInputs[inputVariable->getName()]);
+
+        // TODO: output should be in pairs (name + field)
+        return make_pair(output, newValue);
+    }
+
+}
+
+map<string, NExpression *> FunctionDeclaration::mapInputs(ExpressionList arguments) {
+    map<string, NExpression *> answer;
+    for(int i = 0; i < arguments.size(); i++) {
+        answer[inputs[i]] = arguments[i];
+    }
+    return answer;
 }
 

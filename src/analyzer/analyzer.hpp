@@ -23,6 +23,10 @@ public:
 
     void addOutput(string nameWithField);
 
+    const vector<string> getOutput() {
+        return outputs;
+    }
+
     void addVariable(string name, Assignment *value);
 
     string getName() {
@@ -31,6 +35,12 @@ public:
 
     Assignment * evaluateAssignment(NExpression *currentExpression);
     Assignment * evaluateAssignment(NIdentifier *currentExpression);
+
+    pair<string, Assignment *> evaluateFunction(string output, ExpressionList arguments);
+
+    map<string, NExpression*> mapInputs(ExpressionList arguments);
+
+    void substitute(FunctionDeclaration *function, ExpressionList arguments);
 
     bool checkIfIsInput(NIdentifier *currentIdentifier);
 
@@ -49,8 +59,6 @@ public:
 
     void processAssignment(NStatement *currentStatement);
     void processAssignment(NVariableDeclaration *nAssignment);
-
-    Assignment * substitute(FunctionDeclaration *function, ExpressionList arguments);
 
     virtual ~SymbolicStaticAnalyzer() {
         // TODO: use smart pointers as functions
