@@ -40,6 +40,20 @@ void SymbolicStaticAnalyzer::processBody(NBlock &block) {
     }
 }
 
+void SymbolicStaticAnalyzer::processAssignment(NMethodCall *nMethodCall) {
+    string callName = nMethodCall->id.name;
+    FunctionDeclaration *pFunctionDeclaration;
+    // TODO: better structure for functions (to have better search)?
+    for(auto i : functions)
+    {
+        if (i->getName() == callName) {
+            pFunctionDeclaration = i;
+            break;
+        }
+    }
+    currentFunction->substitute(pFunctionDeclaration, nMethodCall->arguments);
+}
+
 void SymbolicStaticAnalyzer::processAssignment(NStatement *currentStatement) {
     // TODO: get rid of dynamic_cast, as alternative call processAssignment from NStatement
     NVariableDeclaration *nAssignment = dynamic_cast<NVariableDeclaration *>(currentStatement);
@@ -67,19 +81,9 @@ void SymbolicStaticAnalyzer::processAssignment(NStatement *currentStatement) {
 
         // call without return
         if(nMethodCall !=0 ) {
-            string callName = nMethodCall->id.name;
-            FunctionDeclaration *pFunctionDeclaration;
-            // TODO: better structure for functions (to have better search)?
-            for(auto i : functions)
-            {
-                if (i->getName() == callName) {
-                    pFunctionDeclaration = i;
-                    break;
-                }
-            }
-            currentFunction->substitute(pFunctionDeclaration, nMethodCall->arguments);
+            processAssignment(nMethodCall);
+            return;
         }
-        return;
     }
 
     throw WrongFunctionStatement();
@@ -94,7 +98,17 @@ void SymbolicStaticAnalyzer::processAssignment(NVariableDeclaration *nAssignment
         currentFunction->addOutput(name, field);
     }
 
-    currentFunction->addVariable(nameWithField, currentFunction->evaluateAssignment(nAssignment->assignmentExpr));
+    // TODO: here dynamic_cast is nested: one more inside currentFunction->evaluateAssignment
+    NMethodCall *nMethodCall = dynamic_cast<NMethodCall *>(nAssignment->assignmentExpr);
+
+    if (nMethodCall != 0) {
+     //   processAssignment(nMethodCall);
+        // TODO: assign output of nMethodCall to nameWithField
+
+    } else {
+        Assignment *value = currentFunction->evaluateAssignment(nAssignment->assignmentExpr);
+        currentFunction->addVariable(nameWithField, value);
+    }
     /* TODO: case of
     *  X.Y = Z
     *  W.S = V
@@ -172,12 +186,18 @@ Assignment *FunctionDeclaration::evaluateAssignment(NExpression *currentExpressi
 }
 
 string FunctionDeclaration::getVariableName(NIdentifier *currentIdentifier) {
-    if (currentIdentifier->field != "") {
-        return currentIdentifier->name + "." + currentIdentifier->field;
-    } else {
-        return currentIdentifier->name;
-    }
+    return getVariableName(make_pair(currentIdentifier->name, currentIdentifier->field));
+}
 
+string FunctionDeclaration::getVariableName(pair<string,string> output) {
+    string name = output.first;
+    string field = output.second;
+
+    if (field != "") {
+        return name + "." + field;
+    } else {
+        return name;
+    }
 }
 
 bool FunctionDeclaration::checkIfIsInput(NIdentifier *currentIdentifier) {
@@ -212,7 +232,7 @@ void FunctionDeclaration::substitute(FunctionDeclaration *function, ExpressionLi
 pair<string, Assignment *> FunctionDeclaration::evaluateFunction(const pair<string, string> output,
                                                                  ExpressionList arguments) {
     string name = output.first;
-    string nameWithField = name + "." + output.second;
+    string nameWithField = getVariableName(output);
     Assignment *outputValue = variables[nameWithField];
     map<string, NExpression *> mapOfInputs = mapInputs(arguments);
 
@@ -231,6 +251,9 @@ pair<string, Assignment *> FunctionDeclaration::evaluateFunction(const pair<stri
         }
 
         return make_pair(nameWithField, newValue);
+    }
+    if (outputValue->getId() == 2) {
+        // TODO: implement
     }
 
 }

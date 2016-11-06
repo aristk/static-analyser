@@ -45,6 +45,7 @@ public:
     bool checkIfIsInput(NIdentifier *currentIdentifier);
 
     string getVariableName(NIdentifier *currentIdentifier);
+    string getVariableName(pair<string,string> output);
 
     ~FunctionDeclaration();
 };
@@ -59,6 +60,7 @@ public:
 
     void processAssignment(NStatement *currentStatement);
     void processAssignment(NVariableDeclaration *nAssignment);
+    void processAssignment(NMethodCall *nMethodCall);
 
     virtual ~SymbolicStaticAnalyzer() {
         // TODO: use smart pointers as functions
