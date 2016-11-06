@@ -36,3 +36,9 @@ class WrongFunctionArgument: public exception {
         return "Argument of the function is not single variable.";
     }
 };
+
+class InputIsNotAField: public exception {
+    virtual const char* what() const throw() {
+        return "Integer input argument is used as a struct.";
+    }
+};

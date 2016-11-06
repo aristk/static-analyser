@@ -13,7 +13,7 @@ public:
 
 class FunctionDeclaration : public Assignment {
     vector<string> inputs;
-    vector<string> outputs;
+    vector<pair<string,string> > outputs;
     map<string, Assignment *> variables;
     string nameOfFunction;
 public:
@@ -21,9 +21,9 @@ public:
 
     void addInput(NVariableDeclaration* NVariable);
 
-    void addOutput(string nameWithField);
+    void addOutput(const string &name, const string &field);
 
-    const vector<string> getOutput() {
+    const vector<pair<string, string> > getOutput() {
         return outputs;
     }
 
@@ -36,7 +36,7 @@ public:
     Assignment * evaluateAssignment(NExpression *currentExpression);
     Assignment * evaluateAssignment(NIdentifier *currentExpression);
 
-    pair<string, Assignment *> evaluateFunction(string output, ExpressionList arguments);
+    pair<string, Assignment *> evaluateFunction(const pair<string, string> output, ExpressionList arguments);
 
     map<string, NExpression*> mapInputs(ExpressionList arguments);
 

@@ -52,8 +52,9 @@ void SymbolicStaticAnalyzer::processAssignment(NStatement *currentStatement) {
     NReturnStatement *nReturnStatement = dynamic_cast<NReturnStatement *>(currentStatement);
 
     if (nReturnStatement != 0) {
-        string nameWithField = currentFunction->getVariableName(&(nReturnStatement->variable));
-        currentFunction->addOutput(nameWithField);
+        string name = nReturnStatement->variable.name;
+        string field = nReturnStatement->variable.field;
+        currentFunction->addOutput(name, field);
         return;
     }
 
@@ -90,7 +91,7 @@ void SymbolicStaticAnalyzer::processAssignment(NVariableDeclaration *nAssignment
     string nameWithField = currentFunction->getVariableName(&(nAssignment->id));
     // dedicated case if input variable is a structure and having assignment to its field
     if (currentFunction->checkIfIsInput(&(nAssignment->id)) && field != "") {
-        currentFunction->addOutput(nameWithField);
+        currentFunction->addOutput(name, field);
     }
 
     currentFunction->addVariable(nameWithField, currentFunction->evaluateAssignment(nAssignment->assignmentExpr));
@@ -120,10 +121,16 @@ Assignment *FunctionDeclaration::evaluateAssignment(NIdentifier *currentIdentifi
     string field = currentIdentifier->field;
     string name = currentIdentifier->name;
     string fullName = getVariableName(currentIdentifier);
-    // if name is input and structure, init as input
-    if (variables.count(fullName) == 0 && checkIfIsInput(currentIdentifier) && field != "") {
-        variables.emplace(fullName, new InputVariable(fullName));
+    if (variables.count(fullName) == 0) {
+        if(checkIfIsInput(currentIdentifier) && field != "") {
+            // if name is input and structure, init as input
+            variables.emplace(fullName, new InputVariable(fullName));
+        } else {
+            // we are here if we evaluating for function invocation and currentIdentifier is an input
+            return new InputVariable(fullName);
+        }
     }
+    // TODO: check for completeness
     return variables[fullName];
 }
 
@@ -186,9 +193,9 @@ bool FunctionDeclaration::checkIfIsInput(NIdentifier *currentIdentifier) {
     return false;
 }
 
-void FunctionDeclaration::addOutput(string nameWithField) {
+void FunctionDeclaration::addOutput(const string &name, const string &field) {
     // TODO: make outputs a map
-    outputs.push_back(nameWithField);
+    outputs.push_back(make_pair(name, field));
 }
 
 void FunctionDeclaration::addVariable(string name, Assignment *value) {
@@ -202,8 +209,11 @@ void FunctionDeclaration::substitute(FunctionDeclaration *function, ExpressionLi
     }
 }
 
-pair<string, Assignment *> FunctionDeclaration::evaluateFunction(string output, ExpressionList arguments) {
-    Assignment *outputValue = variables[output];
+pair<string, Assignment *> FunctionDeclaration::evaluateFunction(const pair<string, string> output,
+                                                                 ExpressionList arguments) {
+    string name = output.first;
+    string nameWithField = name + "." + output.second;
+    Assignment *outputValue = variables[nameWithField];
     map<string, NExpression *> mapOfInputs = mapInputs(arguments);
 
     // input value
@@ -211,8 +221,16 @@ pair<string, Assignment *> FunctionDeclaration::evaluateFunction(string output, 
         InputVariable *inputVariable = dynamic_cast<InputVariable*>(outputValue);
         Assignment *newValue = evaluateAssignment(mapOfInputs[inputVariable->getName()]);
 
-        // TODO: output should be in pairs (name + field)
-        return make_pair(output, newValue);
+        NIdentifier *newName = dynamic_cast<NIdentifier *>(mapOfInputs[name]);
+        if (newName != 0) {
+            if(newName->name != name) {
+                nameWithField = newName->name + "." + output.second;
+            }
+        } else {
+            throw InputIsNotAField();
+        }
+
+        return make_pair(nameWithField, newValue);
     }
 
 }
