@@ -42,3 +42,9 @@ class InputIsNotAField: public exception {
         return "Integer input argument is used as a struct.";
     }
 };
+
+class genCheckNotImplemented: public exception {
+    virtual const char* what() const throw() {
+        return "genCheck method is not implemented";
+    }
+};

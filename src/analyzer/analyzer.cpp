@@ -1,6 +1,4 @@
 #include "analyzer.hpp"
-#include "exceptions.hpp"
-
 
 extern const std::string tokenIdToName(int value);
 
@@ -9,20 +7,17 @@ using namespace std;
 SymbolicStaticAnalyzer::SymbolicStaticAnalyzer(NBlock *programBlock) {
     for(auto i : programBlock->statements) {
         // check that all root items are NFunctionDeclaration
-        // TODO: usage of dynamic_cast is not good idea
         NFunctionDeclaration *nFunction = dynamic_cast<NFunctionDeclaration*>(i);
         if (nFunction == 0) {
             throw notNFunctionDeclaration();
         }
 
-        // TODO: look like better way is to all follows in construct of FunctionDeclaration
         currentFunction = new FunctionDeclaration(nFunction->id.name);
         functions.push_back(currentFunction);
 
         // add input variable
         for(auto j : nFunction->arguments) {
             // note that all inputs are of NVariableDeclaration type by parsing
-            // TODO: add assertion with check that j is of NVariableDeclaration type
             currentFunction->addInput(j);
         }
 
@@ -55,7 +50,6 @@ void SymbolicStaticAnalyzer::processAssignment(NMethodCall *nMethodCall) {
 }
 
 void SymbolicStaticAnalyzer::processAssignment(NStatement *currentStatement) {
-    // TODO: get rid of dynamic_cast, as alternative call processAssignment from NStatement
     NVariableDeclaration *nAssignment = dynamic_cast<NVariableDeclaration *>(currentStatement);
 
     if (nAssignment != 0) {
@@ -98,12 +92,10 @@ void SymbolicStaticAnalyzer::processAssignment(NVariableDeclaration *nAssignment
         currentFunction->addOutput(name, field);
     }
 
-    // TODO: here dynamic_cast is nested: one more inside currentFunction->evaluateAssignment
     NMethodCall *nMethodCall = dynamic_cast<NMethodCall *>(nAssignment->assignmentExpr);
 
     if (nMethodCall != 0) {
      //   processAssignment(nMethodCall);
-        // TODO: assign output of nMethodCall to nameWithField
 
     } else {
         Assignment *value = currentFunction->evaluateAssignment(nAssignment->assignmentExpr);
@@ -127,7 +119,6 @@ void FunctionDeclaration::addInput(NVariableDeclaration* NVariable) {
 }
 
 FunctionDeclaration::~FunctionDeclaration() {
-    // TODO: use shared_ptr for deleting Assignments
 }
 
 Assignment *FunctionDeclaration::evaluateAssignment(NIdentifier *currentIdentifier) {
@@ -144,7 +135,6 @@ Assignment *FunctionDeclaration::evaluateAssignment(NIdentifier *currentIdentifi
             return new InputVariable(fullName);
         }
     }
-    // TODO: check for completeness
     return variables[fullName];
 }
 
@@ -182,7 +172,6 @@ Assignment *FunctionDeclaration::evaluateAssignment(NExpression *currentExpressi
     }
 
     return nullptr;
-    // TODO: check other options
 }
 
 string FunctionDeclaration::getVariableName(NIdentifier *currentIdentifier) {
@@ -253,7 +242,6 @@ pair<string, Assignment *> FunctionDeclaration::evaluateFunction(const pair<stri
         return make_pair(nameWithField, newValue);
     }
     if (outputValue->getId() == 2) {
-        // TODO: implement
     }
 
 }

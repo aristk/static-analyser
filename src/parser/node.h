@@ -1,15 +1,19 @@
 #include <iostream>
 #include <vector>
-//#include <llvm/Value.h>
+#include <typeinfo>
 
 #ifndef _NODE_H_
 #define _NODE_H_
 
-class CodeGenContext;
+#include "analyzer/exceptions.hpp"
+
+class SatStaticAnalyzer;
 class NStatement;
 class NExpression;
 class NVariableDeclaration;
+class NIdentifier;
 
+// TODO: use shared_ptr for deleting Assignments
 typedef std::vector<NStatement*> StatementList;
 typedef std::vector<NExpression*> ExpressionList;
 typedef std::vector<NVariableDeclaration*> VariableList;
@@ -17,7 +21,18 @@ typedef std::vector<NVariableDeclaration*> VariableList;
 class Node {
 public:
     virtual ~Node() {}
-//    virtual llvm::Value* codeGen(CodeGenContext& context) { }
+
+    std::string name() const { return typeid(*this).name(); }
+
+    virtual void genCheck(SatStaticAnalyzer& context) {
+        std::cerr << name() << std::endl;
+        throw genCheckNotImplemented();
+    }
+
+    virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context) {
+        std::cerr << name() << std::endl;
+        throw genCheckNotImplemented();
+    }
 };
 
 class NExpression : public Node {
@@ -30,7 +45,12 @@ class NInteger : public NExpression {
 public:
     int value;
     NInteger(int value) : value(value) { }
-//    virtual llvm::Value* codeGen(CodeGenContext& context);
+    virtual void genCheck(SatStaticAnalyzer& context)
+    {
+        throw genCheckNotImplemented();
+    }
+
+    virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context);
 };
 
 class NIdentifier : public NExpression {
@@ -59,7 +79,8 @@ public:
     NExpression& rhs;
     NBinaryOperator(NExpression& lhs, int op, NExpression& rhs) :
             lhs(lhs), rhs(rhs), op(op) { }
-//    virtual llvm::Value* codeGen(CodeGenContext& context);
+
+    virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context);
 };
 
 class NAssignment : public NExpression {
@@ -75,7 +96,8 @@ class NBlock : public NExpression {
 public:
     StatementList statements;
     NBlock() { }
-//    virtual llvm::Value* codeGen(CodeGenContext& context);
+
+    virtual void genCheck(SatStaticAnalyzer& context);
 };
 
 class NExpressionStatement : public NStatement {
@@ -101,7 +123,8 @@ public:
             id(id) { }
     NVariableDeclaration(NIdentifier& id, NExpression *assignmentExpr) :
             id(id), assignmentExpr(assignmentExpr) { }
-//    virtual llvm::Value* codeGen(CodeGenContext& context);
+
+    virtual void genCheck(SatStaticAnalyzer& context);
 };
 
 class NFunctionDeclaration : public NStatement {
@@ -112,7 +135,8 @@ public:
     NFunctionDeclaration(const NIdentifier& id,
                          const VariableList& arguments, NBlock& block) :
             id(id), arguments(arguments), block(block) { }
-//    virtual llvm::Value* codeGen(CodeGenContext& context);
+
+    virtual void genCheck(SatStaticAnalyzer& context);
 };
 
 #endif

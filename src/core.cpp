@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include "parser/node.h"
-#include "analyzer/analyzer.hpp"
+#include "analyzer/satAnalyzer.hpp"
 
 using namespace std;
 
@@ -25,7 +25,14 @@ int core(int argc, char **argv)
     yyparse();
     fclose(file);
 
-//    std::cout << programBlock << std::endl;
+    SatStaticAnalyzer satAnalyzer;
+    try {
+        satAnalyzer.generateCheck(*programBlock);
+    } catch (exception& e) {
+        cerr << "Exception caught:" << endl;
+        cerr << e.what() << endl;
+    }
+
 
     // TODO: properly delete programBlock
     StaticAnalyzer *analyzer = NULL;

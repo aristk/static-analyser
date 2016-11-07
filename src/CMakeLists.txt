@@ -30,11 +30,11 @@ IF(BISON_FOUND)
 ENDIF()
 SET_SOURCE_FILES_PROPERTIES(${BisonOutput} GENERATED)
 
-include_directories(${BisonDir})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 include_directories(${CMAKE_SOURCE_DIR}/cryptominisat-5.0.1/src)
 
-set(SOURCE_FILES analyzer/analyzer.cpp core.cpp ${FlexOutput} ${BisonOutput})
+set(SOURCE_FILES analyzer/analyzer.cpp analyzer/satAnalyzer.cpp analyzer/node.cpp core.cpp ${FlexOutput} ${BisonOutput})
 add_library(core ${SOURCE_FILES})
 add_executable(staticAnalyzer main.cpp)
 target_link_libraries(staticAnalyzer core libcryptominisat5)
