@@ -11,14 +11,18 @@ class SatStaticAnalyzer : public StaticAnalyzer {
     std::unique_ptr<SATSolver> solver;
     // relation of NIdentifier to variables
     map<pair<string, string>, int> variables;
+
+    int getIdentifierVariables(const NIdentifier &nIdentifier) const;
+    int addNewVariable(const NIdentifier &nIdentifier);
 public:
     SatStaticAnalyzer() : numOfBitsPerInt(2), solver(new SATSolver), variables()  {}
 
-    void addClauses(NIdentifier &nIdentifier, NInteger &nInteger);
+    void addClauses(const NIdentifier &nIdentifier, const NInteger &nInteger);
+    void addClauses(const NIdentifier &nIdentifier, const NBinaryOperator &nBinaryOperator);
 
-    void generateCheck(NBlock& root);
+    void generateCheck(const NBlock& root);
 
-    SATSolver *getSolver() {
+    SATSolver *getSolver() const {
         return solver.get();
     }
 };

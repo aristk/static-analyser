@@ -24,7 +24,7 @@ public:
 
     std::string name() const { return typeid(*this).name(); }
 
-    virtual void genCheck(SatStaticAnalyzer& context) {
+    virtual void genCheck(SatStaticAnalyzer& context) const {
         std::cerr << name() << std::endl;
         throw genCheckNotImplemented();
     }
@@ -45,7 +45,7 @@ class NInteger : public NExpression {
 public:
     int value;
     NInteger(int value) : value(value) { }
-    virtual void genCheck(SatStaticAnalyzer& context)
+    virtual void genCheck(SatStaticAnalyzer& context) const
     {
         throw genCheckNotImplemented();
     }
@@ -74,7 +74,7 @@ public:
 
 class NBinaryOperator : public NExpression {
 public:
-    boolpi op;
+    bool op;
     NIdentifier& lhs;
     NIdentifier& rhs;
     NBinaryOperator(NIdentifier& lhs, int op, NIdentifier& rhs) :
@@ -97,7 +97,7 @@ public:
     StatementList statements;
     NBlock() { }
 
-    virtual void genCheck(SatStaticAnalyzer& context);
+    virtual void genCheck(SatStaticAnalyzer& context) const;
 };
 
 class NExpressionStatement : public NStatement {
@@ -124,7 +124,7 @@ public:
     NVariableDeclaration(NIdentifier& id, NExpression *assignmentExpr) :
             id(id), assignmentExpr(assignmentExpr) { }
 
-    virtual void genCheck(SatStaticAnalyzer& context);
+    virtual void genCheck(SatStaticAnalyzer& context) const;
 };
 
 class NFunctionDeclaration : public NStatement {
@@ -136,7 +136,7 @@ public:
                          const VariableList& arguments, NBlock& block) :
             id(id), arguments(arguments), block(block) { }
 
-    virtual void genCheck(SatStaticAnalyzer& context);
+    virtual void genCheck(SatStaticAnalyzer& context) const;
 };
 
 #endif

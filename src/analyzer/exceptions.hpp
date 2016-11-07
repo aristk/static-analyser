@@ -43,6 +43,12 @@ class InputIsNotAField: public exception {
     }
 };
 
+class SatVariableIsNotDefinened: public exception {
+    virtual const char* what() const throw() {
+        return "Current variable was not used yet.";
+    }
+};
+
 class genCheckNotImplemented: public exception {
     virtual const char* what() const throw() {
         return "genCheck method is not implemented";
