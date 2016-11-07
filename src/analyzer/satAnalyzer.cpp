@@ -6,21 +6,21 @@ void SatStaticAnalyzer::generateCheck(const NBlock &root) {
 }
 
 
-int SatStaticAnalyzer::addNewVariable(const NIdentifier &nIdentifier) {
-    int nVars = solver->nVars();
+unsigned int SatStaticAnalyzer::addNewVariable(const NIdentifier &nIdentifier) {
+    unsigned int nVars = solver->nVars();
     variables[make_pair(nIdentifier.name, nIdentifier.field)] = nVars;
     solver->new_vars(numOfBitsPerInt);
     return nVars;
 }
 
 void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NInteger &nInteger) {
-    int nVars = addNewVariable(nIdentifier);
+    unsigned int nVars = addNewVariable(nIdentifier);
     vector<Lit> clause(1);
 
     int value = nInteger.value;
 
     for (int i = 0; i < numOfBitsPerInt; i++) {
-        clause[0] = Lit(nVars + i, 1-(value & 0b1));
+        clause[0] = Lit(nVars + i, (bool) (true - (value & 0b1)));
         solver->add_clause(clause);
         value >>= 1;
     }
@@ -32,7 +32,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NBinary
     vector<unsigned int> nVars(variableCount);
     nVars[0] = addNewVariable(nIdentifier);
     // add new variable to handle output of NBinaryOperator
-    int newVarLast = solver->nVars();
+    unsigned int newVarLast = solver->nVars();
     solver->new_var();
     nVars[1] = getIdentifierVariables(nBinaryOperator.lhs);
     nVars[2] = getIdentifierVariables(nBinaryOperator.rhs);
@@ -67,9 +67,17 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NBinary
     bigClause[numOfBitsPerInt] = Lit(newVarLast, true);
     solver->add_clause(bigClause);
 
+    tryValue(false, nIdentifier, nBinaryOperator, newVarLast);
+
+    tryValue(true, nIdentifier, nBinaryOperator, newVarLast);
+}
+
+void
+SatStaticAnalyzer::tryValue(bool value, const NIdentifier &nIdentifier, const NBinaryOperator &nBinaryOperator,
+                            unsigned int newVarLast) const {
     vector<Lit> assumptions(1);
 
-    assumptions[0] = Lit(newVarLast, false);
+    assumptions[0] = Lit(newVarLast, value);
 
     lbool ret = solver->solve(&assumptions);
 
@@ -78,23 +86,12 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NBinary
         if (nIdentifier.field != "") {
             name = nIdentifier.name + "." + nIdentifier.field;
         }
-        cout << name << " has constant value " << nBinaryOperator.op << endl;
-    }
-
-    assumptions[0] = Lit(newVarLast, true);
-
-    ret = solver->solve(&assumptions);
-
-    if (ret == l_False) {
-        string name = nIdentifier.name;
-        if (nIdentifier.field != "") {
-            name = nIdentifier.name + "." + nIdentifier.field;
-        }
-        cout << name << " has constant value " << (0b1 ^ nBinaryOperator.op) << endl;
+        cout << name << " has constant value " << (value ^ nBinaryOperator.op) <<
+             " at line " << nBinaryOperator.lineno << endl;
     }
 }
 
-int
+unsigned int
 SatStaticAnalyzer::getIdentifierVariables(const NIdentifier &nIdentifier) const {
     pair<string, string> key = make_pair(nIdentifier.name, nIdentifier.field);
     // TODO: best way is to hide with assert or NDEBUG

@@ -8,10 +8,11 @@
 extern "C" int yywrap() { }
 %}
 
+%option yylineno
+
 %%
 
-[ \t\n]                 ;
-"//".*\n                ;
+"//".*                  ;
 "return"                return TOKEN(RETURN);
 "func"                  return TOKEN(FUNC);
 [a-zA-Z_][a-zA-Z0-9_]*  SAVE_TOKEN; return TIDENTIFIER;
@@ -25,6 +26,8 @@ extern "C" int yywrap() { }
 "}"                     return TOKEN(TRBRACE);
 "."                     return TOKEN(TDOT);
 ","                     return TOKEN(TCOMMA);
+[ \t]                   ;
+\n                      ;
 .                       printf("Unknown token!n"); yyterminate();
 
 %%

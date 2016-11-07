@@ -77,8 +77,9 @@ public:
     bool op;
     NIdentifier& lhs;
     NIdentifier& rhs;
-    NBinaryOperator(NIdentifier& lhs, int op, NIdentifier& rhs) :
-            lhs(lhs), rhs(rhs), op(op) { }
+    int lineno;
+    NBinaryOperator(NIdentifier& lhs, int op, NIdentifier& rhs, int lineno) :
+            lhs(lhs), rhs(rhs), op(op), lineno(lineno) { }
 
     virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context);
 };

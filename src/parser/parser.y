@@ -3,6 +3,7 @@
 NBlock *programBlock; /* the top level root node of our final AST */
 
 extern int yylex();
+extern int yyget_lineno();
 void yyerror(const char *s) { printf("ERROR: %sn", s); }
 %}
 /* for more error verbose */
@@ -88,11 +89,12 @@ ident : TIDENTIFIER { $$ = new NIdentifier(*$1); delete $1; }
 numeric : TINTEGER { $$ = new NInteger(atol($1->c_str())); delete $1; }
 ;
 
+/* TODO: some issues with lineno */
 expr : ident TEQUAL expr { $$ = new NAssignment(*$<ident>1, *$3); }
 | ident TLPAREN call_args TRPAREN { $$ = new NMethodCall(*$1, *$3); delete $3; }
 | ident { $<ident>$ = $1; }
 | numeric
-| ident comparison ident { $$ = new NBinaryOperator(*$1, $2==TCEQ, *$3); }
+| ident comparison ident { $$ = new NBinaryOperator(*$1, $2==TCEQ, *$3, yyget_lineno()-2); }
 | TLPAREN expr TRPAREN { $$ = $2; }
 ;
 
