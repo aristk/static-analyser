@@ -28,9 +28,8 @@ void yyerror(const char *s) { printf("ERROR: %sn", s); }
    they represent.
  */
 %token <string> TIDENTIFIER TINTEGER
-%token <token> TCEQ TCNE TCLT TCLE TCGT TCGE TEQUAL RETURN FUNC
+%token <token> TCEQ TCNE TEQUAL RETURN FUNC
 %token <token> TLPAREN TRPAREN TLBRACE TRBRACE TCOMMA TDOT
-%token <token> TPLUS TMINUS TMUL TDIV
 
 /* Define the type of node our nonterminal symbols represent.
    The types refer to the %union declaration above. Ex: when
@@ -93,7 +92,7 @@ expr : ident TEQUAL expr { $$ = new NAssignment(*$<ident>1, *$3); }
 | ident TLPAREN call_args TRPAREN { $$ = new NMethodCall(*$1, *$3); delete $3; }
 | ident { $<ident>$ = $1; }
 | numeric
-| expr comparison expr { $$ = new NBinaryOperator(*$1, $2, *$3); }
+| ident comparison ident { $$ = new NBinaryOperator(*$1, $2==TCEQ, *$3); }
 | TLPAREN expr TRPAREN { $$ = $2; }
 ;
 
@@ -102,8 +101,7 @@ call_args : /*blank*/  { $$ = new ExpressionList(); }
 | call_args TCOMMA expr  { $1->push_back($3); }
 ;
 
-comparison : TCEQ | TCNE | TCLT | TCLE | TCGT | TCGE
-| TPLUS | TMINUS | TMUL | TDIV
+comparison : TCEQ | TCNE
 ;
 
 %%

@@ -74,10 +74,10 @@ public:
 
 class NBinaryOperator : public NExpression {
 public:
-    int op;
-    NExpression& lhs;
-    NExpression& rhs;
-    NBinaryOperator(NExpression& lhs, int op, NExpression& rhs) :
+    boolpi op;
+    NIdentifier& lhs;
+    NIdentifier& rhs;
+    NBinaryOperator(NIdentifier& lhs, int op, NIdentifier& rhs) :
             lhs(lhs), rhs(rhs), op(op) { }
 
     virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context);

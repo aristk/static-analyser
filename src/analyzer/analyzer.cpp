@@ -1,7 +1,5 @@
 #include "analyzer.hpp"
 
-extern const std::string tokenIdToName(int value);
-
 using namespace std;
 
 SymbolicStaticAnalyzer::SymbolicStaticAnalyzer(NBlock *programBlock) {
@@ -150,18 +148,17 @@ Assignment *FunctionDeclaration::evaluateAssignment(NExpression *currentExpressi
     if (currentOp != 0) {
         Assignment *lhs = evaluateAssignment(&(currentOp->lhs));
         Assignment *rhs = evaluateAssignment(&(currentOp->rhs));
-        const string op = tokenIdToName(currentOp->op);
+        const int op = currentOp->op;
+        string opString = op == 1 ? "==" : "!=" ;
         if (lhs->isEqualTo(rhs)) {
-            if (op == "==") {
+            if (op) {
                 return new IntegerAssignment(1);
-            } else if (op == "!="){
+            } else {
                 // case of !=
                 return new IntegerAssignment(0);
-            } else {
-                throw WrongBinaryOperator();
             }
         } else {
-            return new LogicAssignment(op, lhs, rhs);
+            return new LogicAssignment(opString, lhs, rhs);
         }
     }
 

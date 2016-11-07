@@ -3,17 +3,6 @@
 #include "node.h"
 #include "parser.hpp"
 
-const std::string tokenIdToName(int value) {
-    switch(value) {
-    case TCEQ:
-        return "==";
-    case TCNE:
-        return "!=";
-    default:
-        return "";
-    }
-}
-
 #define SAVE_TOKEN yylval.string = new std::string(yytext, yyleng)
 #define TOKEN(t) (yylval.token = t)
 extern "C" int yywrap() { }
@@ -30,20 +19,12 @@ extern "C" int yywrap() { }
 "="                     return TOKEN(TEQUAL);
 "=="                    return TOKEN(TCEQ);
 "!="                    return TOKEN(TCNE);
-"<"                     return TOKEN(TCLT);
-"<="                    return TOKEN(TCLE);
-">"                     return TOKEN(TCGT);
-">="                    return TOKEN(TCGE);
 "("                     return TOKEN(TLPAREN);
 ")"                     return TOKEN(TRPAREN);
 "{"                     return TOKEN(TLBRACE);
 "}"                     return TOKEN(TRBRACE);
 "."                     return TOKEN(TDOT);
 ","                     return TOKEN(TCOMMA);
-"+"                     return TOKEN(TPLUS);
-"-"                     return TOKEN(TMINUS);
-"*"                     return TOKEN(TMUL);
-"/"                     return TOKEN(TDIV);
 .                       printf("Unknown token!n"); yyterminate();
 
 %%
