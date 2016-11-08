@@ -4,7 +4,6 @@
 class NBlock;
 using namespace CMSat;
 
-// TODO: output should be line number in the file + value
 class SatStaticAnalyzer : public StaticAnalyzer {
     // how many bits we need per integer (depends on max int from parser)
     const unsigned int numOfBitsPerInt;
@@ -12,13 +11,16 @@ class SatStaticAnalyzer : public StaticAnalyzer {
     // relation of NIdentifier to variables
     map<pair<string, string>, unsigned int> variables;
 
+    map<string, vector<string> > functionInputs;
+
     unsigned int getIdentifierVariables(const NIdentifier &nIdentifier) const;
     unsigned int addNewVariable(const NIdentifier &nIdentifier);
 public:
-    SatStaticAnalyzer() : numOfBitsPerInt(2), solver(new SATSolver), variables()  {}
+    SatStaticAnalyzer() : numOfBitsPerInt(2), solver(new SATSolver), variables(), functionInputs()  {}
 
-    void addClauses(const NIdentifier &nIdentifier, const NInteger &nInteger);
-    void addClauses(const NIdentifier &nIdentifier, const NBinaryOperator &nBinaryOperator);
+    void addClauses(const NIdentifier &lhs, const NInteger &nInteger);
+    void addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator);
+    void addClauses(const NIdentifier &lhs, const NIdentifier &nIdentifier);
 
     void generateCheck(const NBlock& root);
 

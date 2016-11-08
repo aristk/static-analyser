@@ -31,7 +31,7 @@ public:
 
     virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context) {
         std::cerr << name() << std::endl;
-        throw genCheckNotImplemented();
+        throw addClausesNotImplemented();
     }
 };
 
@@ -59,7 +59,15 @@ public:
     std::string field;
     NIdentifier(const std::string& name) : name(name) { }
     NIdentifier(const std::string& name, const std::string& field) : name(name), field(field) { }
-//    virtual llvm::Value* codeGen(CodeGenContext& context);
+
+    virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context);
+
+    std::string printName() const {
+        if(field != "")
+            return name + "." + field;
+        else
+            return name;
+    }
 };
 
 class NMethodCall : public NExpression {

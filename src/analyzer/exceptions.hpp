@@ -54,3 +54,9 @@ class genCheckNotImplemented: public exception {
         return "genCheck method is not implemented";
     }
 };
+
+class addClausesNotImplemented: public exception {
+    virtual const char* what() const throw() {
+        return "addClauses method is not implemented";
+    }
+};

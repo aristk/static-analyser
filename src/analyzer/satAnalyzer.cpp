@@ -13,6 +13,21 @@ unsigned int SatStaticAnalyzer::addNewVariable(const NIdentifier &nIdentifier) {
     return nVars;
 }
 
+void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &nIdentifier) {
+    const int variableCount = 2;
+    vector<unsigned int> nVars(variableCount);
+    nVars[0] = addNewVariable(lhs);
+    nVars[1] = getIdentifierVariables(nIdentifier);
+    vector<unsigned int> clause(variableCount);
+
+    for (int i = 0; i < numOfBitsPerInt; i++) {
+        for (int j = 0; j < variableCount; j++) {
+            clause[j] = nVars[j] + i;
+        }
+        solver->add_xor_clause(clause, false);
+    }
+}
+
 void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NInteger &nInteger) {
     unsigned int nVars = addNewVariable(nIdentifier);
     vector<Lit> clause(1);
@@ -82,11 +97,7 @@ SatStaticAnalyzer::tryValue(bool value, const NIdentifier &nIdentifier, const NB
     lbool ret = solver->solve(&assumptions);
 
     if (ret == l_False) {
-        string name = nIdentifier.name;
-        if (nIdentifier.field != "") {
-            name = nIdentifier.name + "." + nIdentifier.field;
-        }
-        cout << name << " has constant value " << (value ^ nBinaryOperator.op) <<
+        cout << nIdentifier.printName() << " has constant value " << (value ^ nBinaryOperator.op) <<
              " at line " << nBinaryOperator.lineno << endl;
     }
 }
@@ -96,7 +107,7 @@ SatStaticAnalyzer::getIdentifierVariables(const NIdentifier &nIdentifier) const 
     pair<string, string> key = make_pair(nIdentifier.name, nIdentifier.field);
     // TODO: best way is to hide with assert or NDEBUG
     if (variables.count(key) == 0 ) {
-        cerr << nIdentifier.name << "." << nIdentifier.field << endl;
+        cerr << nIdentifier.printName() << endl;
         throw SatVariableIsNotDefinened();
     }
 
