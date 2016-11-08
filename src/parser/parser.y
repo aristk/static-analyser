@@ -18,7 +18,7 @@ void yyerror(const char *s) { printf("ERROR: %sn", s); }
     NStatement *stmt;
     NIdentifier *ident;
     NVariableDeclaration *var_decl;
-    std::vector<NVariableDeclaration*> *varvec;
+    std::vector<NIdentifier*> *varvec;
     std::vector<NExpression*> *exprvec;
     std::string *string;
     int token;
@@ -78,8 +78,8 @@ func_decl : FUNC ident TLPAREN func_decl_args TRPAREN block
 ;
 
 func_decl_args : /*blank*/  { $$ = new VariableList(); }
-| var_decl { $$ = new VariableList(); $$->push_back($<var_decl>1); }
-| func_decl_args TCOMMA var_decl { $1->push_back($<var_decl>3); }
+| ident { $$ = new VariableList(); $$->push_back($<ident>1); }
+| func_decl_args TCOMMA ident { $1->push_back($<ident>3); }
 ;
 
 ident : TIDENTIFIER { $$ = new NIdentifier(*$1); delete $1; }

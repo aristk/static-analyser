@@ -13,7 +13,7 @@ class SatStaticAnalyzer : public StaticAnalyzer {
 
     map<string, vector<string> > functionInputs;
 
-    unsigned int getIdentifierVariables(const NIdentifier &nIdentifier) const;
+    unsigned int getIdentifierVariables(const NIdentifier &nIdentifier);
     unsigned int addNewVariable(const NIdentifier &nIdentifier);
 public:
     SatStaticAnalyzer() : numOfBitsPerInt(2), solver(new SATSolver), variables(), functionInputs()  {}
@@ -21,6 +21,8 @@ public:
     void addClauses(const NIdentifier &lhs, const NInteger &nInteger);
     void addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator);
     void addClauses(const NIdentifier &lhs, const NIdentifier &nIdentifier);
+
+    void addInputs(const VariableList &inputs, const NIdentifier &functionName);
 
     void generateCheck(const NBlock& root);
 

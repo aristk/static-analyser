@@ -19,7 +19,7 @@ SET_SOURCE_FILES_PROPERTIES(${FlexOutput} GENERATED)
 # bison -d -o parser.cpp parser.y
 FIND_PACKAGE(BISON REQUIRED)
 SET(BisonDir ${CMAKE_CURRENT_SOURCE_DIR}/parser)
-SET(BisonOutput ${BisonDir}/parser.cpp)
+SET(BisonOutput ${BisonDir}/parser.cpp )
 IF(BISON_FOUND)
     ADD_CUSTOM_COMMAND(
             OUTPUT ${BisonOutput}
@@ -28,7 +28,7 @@ IF(BISON_FOUND)
             ${BisonDir}/parser.y
     )
 ENDIF()
-SET_SOURCE_FILES_PROPERTIES(${BisonOutput} GENERATED)
+SET_SOURCE_FILES_PROPERTIES(${BisonOutput} ${BisonDir}/parser.hpp GENERATED)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 

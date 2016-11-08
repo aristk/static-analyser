@@ -16,7 +16,7 @@ class NIdentifier;
 // TODO: use shared_ptr for deleting Assignments
 typedef std::vector<NStatement*> StatementList;
 typedef std::vector<NExpression*> ExpressionList;
-typedef std::vector<NVariableDeclaration*> VariableList;
+typedef std::vector<NIdentifier*> VariableList;
 
 class Node {
 public:

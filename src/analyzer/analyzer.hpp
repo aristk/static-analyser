@@ -19,7 +19,7 @@ class FunctionDeclaration : public Assignment {
 public:
     FunctionDeclaration(const string& name): Assignment(4), nameOfFunction(name) {}
 
-    void addInput(NVariableDeclaration* NVariable);
+    void addInput(NIdentifier *NVariable);
 
     void addOutput(const string &name, const string &field);
 

@@ -103,14 +103,20 @@ SatStaticAnalyzer::tryValue(bool value, const NIdentifier &nIdentifier, const NB
 }
 
 unsigned int
-SatStaticAnalyzer::getIdentifierVariables(const NIdentifier &nIdentifier) const {
+SatStaticAnalyzer::getIdentifierVariables(const NIdentifier &nIdentifier) {
     pair<string, string> key = make_pair(nIdentifier.name, nIdentifier.field);
-    // TODO: best way is to hide with assert or NDEBUG
-    if (variables.count(key) == 0 ) {
-        cerr << nIdentifier.printName() << endl;
-        throw SatVariableIsNotDefinened();
-    }
+    return variables[key];
+}
 
-    return variables.at(key);
+void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier &functionName) {
+    vector<string> inputsNames(inputs.size());
+    for(unsigned int i = 0; i < inputs.size(); i++) {
+        // TODO: checks that structures are not allowed should be part of the parser
+        if (inputs[i]->field != "")  {
+            throw InputIsAStruct();
+        }
+        inputsNames[i] = inputs[i]->printName();
+    }
+    functionInputs.emplace(functionName.printName(), inputsNames);
 }
 

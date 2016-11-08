@@ -107,11 +107,11 @@ void SymbolicStaticAnalyzer::processAssignment(NVariableDeclaration *nAssignment
     */
 }
 
-void FunctionDeclaration::addInput(NVariableDeclaration* NVariable) {
-    if (NVariable->id.field != "" || NVariable->assignmentExpr != NULL) {
+void FunctionDeclaration::addInput(NIdentifier *NVariable) {
+    if (NVariable->field != "") {
         throw WrongFunctionArgument();
     }
-    string name = NVariable->id.name;
+    string name = NVariable->name;
     inputs.push_back(name);
     variables.emplace(name, new InputVariable(name));
 }
@@ -233,7 +233,7 @@ pair<string, Assignment *> FunctionDeclaration::evaluateFunction(const pair<stri
                 nameWithField = newName->name + "." + output.second;
             }
         } else {
-            throw InputIsNotAField();
+            throw InputIsAStruct();
         }
 
         return make_pair(nameWithField, newValue);

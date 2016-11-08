@@ -9,8 +9,8 @@ void NBlock::genCheck(SatStaticAnalyzer& context) const {
 }
 
 void NFunctionDeclaration::genCheck(SatStaticAnalyzer &context) const {
-    // TODO: process inputs
-    // TODO: checks that Variable assignments and structures are not allowed should be part of the parser
+    // process inputs
+    context.addInputs(arguments, id);
 
     // process body
     block.genCheck(context);

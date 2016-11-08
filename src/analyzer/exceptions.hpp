@@ -37,7 +37,7 @@ class WrongFunctionArgument: public exception {
     }
 };
 
-class InputIsNotAField: public exception {
+class InputIsAStruct: public exception {
     virtual const char* what() const throw() {
         return "Integer input argument is used as a struct.";
     }
