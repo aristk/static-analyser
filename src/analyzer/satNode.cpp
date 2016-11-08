@@ -3,7 +3,10 @@
 
 void NBlock::genCheck(SatStaticAnalyzer& context) const {
     for(auto i : statements) {
-        // TODO: add to the parser check that only NFunctionDeclaration could be here
+        if (i->isFunctionDeclaration()) {
+            // TODO: add to the parser check that NFunctionDeclaration could not be here
+            throw WrongFunctionStatement();
+        }
         i->genCheck(context);
     }
 }

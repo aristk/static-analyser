@@ -2,9 +2,14 @@
 #include "satAnalyzer.hpp"
 
 void SatStaticAnalyzer::generateCheck(const NBlock &root) {
-    root.genCheck(*this);
+    for(auto i : root.statements) {
+        if (!(i->isFunctionDeclaration())) {
+            // TODO: add to the parser check that only NFunctionDeclaration could be here
+            throw notNFunctionDeclaration();
+        }
+        i->genCheck(*this);
+    }
 }
-
 
 unsigned int SatStaticAnalyzer::addNewVariable(const NIdentifier &nIdentifier) {
     unsigned int nVars = solver->nVars();

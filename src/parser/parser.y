@@ -60,6 +60,7 @@ stmts : stmt { $$ = new NBlock(); $$->statements.push_back($<stmt>1); }
 | stmts stmt { $1->statements.push_back($<stmt>2); }
 ;
 
+
 stmt : var_decl | func_decl
 | expr { $$ = new NExpressionStatement(*$1); }
 | RETURN ident {$$ = new NReturnStatement(*$2); }
@@ -94,7 +95,7 @@ expr : ident TEQUAL expr { $$ = new NAssignment(*$<ident>1, *$3); }
 | ident TLPAREN call_args TRPAREN { $$ = new NMethodCall(*$1, *$3); delete $3; }
 | ident { $<ident>$ = $1; }
 | numeric
-| ident comparison ident { $$ = new NBinaryOperator(*$1, $2==TCEQ, *$3, yyget_lineno()-2); }
+| ident comparison ident { $$ = new NBinaryOperator(*$1, $2==TCEQ, *$3, yyget_lineno()); }
 | TLPAREN expr TRPAREN { $$ = $2; }
 ;
 

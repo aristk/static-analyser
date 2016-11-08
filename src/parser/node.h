@@ -39,6 +39,10 @@ class NExpression : public Node {
 };
 
 class NStatement : public Node {
+public:
+    virtual bool isFunctionDeclaration () {
+        return false;
+    }
 };
 
 class NInteger : public NExpression {
@@ -146,6 +150,10 @@ public:
             id(id), arguments(arguments), block(block) { }
 
     virtual void genCheck(SatStaticAnalyzer& context) const;
+
+    virtual bool isFunctionDeclaration () {
+        return true;
+    }
 };
 
 #endif
