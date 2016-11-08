@@ -18,6 +18,17 @@ unsigned int SatStaticAnalyzer::addNewVariable(const NIdentifier &nIdentifier) {
     return nVars;
 }
 
+unsigned int
+SatStaticAnalyzer::getIdentifierVariables(const NIdentifier &nIdentifier) {
+    pair<string, string> key = make_pair(nIdentifier.name, nIdentifier.field);
+
+    // if variables was not defined, define them
+    if (variables.count(key) == 0) {
+        addNewVariable(nIdentifier);
+    }
+    return variables[key];
+}
+
 void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &nIdentifier) {
     const int variableCount = 2;
     vector<unsigned int> nVars(variableCount);
@@ -98,19 +109,18 @@ SatStaticAnalyzer::tryValue(bool value, const NIdentifier &nIdentifier, const NB
     vector<Lit> assumptions(1);
 
     assumptions[0] = Lit(newVarLast, value);
-
-    lbool ret = solver->solve(&assumptions);
+    lbool ret;
+/*
+    vector<lbool> model;
+    ret = solver->solve();
+    model = solver->get_model();
+*/
+    ret = solver->solve(&assumptions);
 
     if (ret == l_False) {
         cout << nIdentifier.printName() << " has constant value " << (value ^ nBinaryOperator.op) <<
              " at line " << nBinaryOperator.lineno << endl;
     }
-}
-
-unsigned int
-SatStaticAnalyzer::getIdentifierVariables(const NIdentifier &nIdentifier) {
-    pair<string, string> key = make_pair(nIdentifier.name, nIdentifier.field);
-    return variables[key];
 }
 
 void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier &functionName) {
