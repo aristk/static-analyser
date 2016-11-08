@@ -23,6 +23,10 @@ void NVariableDeclaration::genCheck(SatStaticAnalyzer &context) const {
     assignmentExpr->addClauses(id, context);
 }
 
+void NReturnStatement::genCheck(SatStaticAnalyzer &context) const {
+    context.addReturn(this->variable);
+}
+
 //TODO: somehow merge into one call
 void NInteger::addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &context) {
     context.addClauses(nIdentifier, *this);

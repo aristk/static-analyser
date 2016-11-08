@@ -114,14 +114,26 @@ SatStaticAnalyzer::getIdentifierVariables(const NIdentifier &nIdentifier) {
 }
 
 void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier &functionName) {
+    unique_ptr<SatFunctionDeclaration> Function(new SatFunctionDeclaration);
+
     vector<string> inputsNames(inputs.size());
-    for(unsigned int i = 0; i < inputs.size(); i++) {
+    for(auto i : inputs) {
         // TODO: checks that structures are not allowed should be part of the parser
-        if (inputs[i]->field != "")  {
+        if (i->field != "")  {
             throw InputIsAStruct();
         }
-        inputsNames[i] = inputs[i]->printName();
+        Function->addInput(i->printName());
     }
-    functionInputs.emplace(functionName.printName(), inputsNames);
+
+    string name = functionName.printName();
+
+    functions.emplace(name, move(Function));
+    currentFunctionName = name;
+}
+
+void SatStaticAnalyzer::addReturn(const NIdentifier &variableName) {
+    SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
+
+    currentFunction->addOutput(variableName.printName());
 }
 

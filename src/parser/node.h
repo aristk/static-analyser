@@ -19,10 +19,9 @@ typedef std::vector<NExpression*> ExpressionList;
 typedef std::vector<NIdentifier*> VariableList;
 
 class Node {
+    std::string name() const { return typeid(*this).name(); }
 public:
     virtual ~Node() {}
-
-    std::string name() const { return typeid(*this).name(); }
 
     virtual void genCheck(SatStaticAnalyzer& context) const {
         std::cerr << name() << std::endl;
@@ -126,6 +125,8 @@ public:
     NIdentifier& variable;
     NReturnStatement(NIdentifier& variable) :
             variable(variable) { }
+
+    virtual void genCheck(SatStaticAnalyzer& context) const;
 };
 
 class NVariableDeclaration : public NStatement {

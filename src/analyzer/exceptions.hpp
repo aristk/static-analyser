@@ -37,6 +37,13 @@ class WrongFunctionArgument: public exception {
     }
 };
 
+class FunctionIsNotDefined: public exception {
+    virtual const char* what() const throw()
+    {
+        return "Function is not defined.";
+    }
+};
+
 class InputIsAStruct: public exception {
     virtual const char* what() const throw() {
         return "Integer input argument is used as a struct.";
