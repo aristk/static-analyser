@@ -22,14 +22,14 @@ void NFunctionDeclaration::genCheck(SatStaticAnalyzer &context) const {
 void NVariableDeclaration::genCheck(SatStaticAnalyzer &context) const {
     // if variable is a struct and is an input add it to outputs
     if((this->id.field != "") && (context.isCurrentInput(id))) {
-        context.addReturn(id);
+        context.addOutput(id);
     }
 
     assignmentExpr->addClauses(id, context);
 }
 
 void NReturnStatement::genCheck(SatStaticAnalyzer &context) const {
-    context.addReturn(this->variable);
+    context.addTrueOutput(this->variable);
 }
 
 void NMethodCall::genCheck(SatStaticAnalyzer &context) const {
@@ -57,12 +57,16 @@ void NIdentifier::addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &contex
     context.addClauses(key, *this);
 }
 
-void NIdentifier::mapVariables(const string &functionName, const string &inputName, SatStaticAnalyzer &context) {
+pair<string, string> NIdentifier::mapVariables(const string &functionName, const string &inputName,
+                                               SatStaticAnalyzer &context) {
     FullVariableName key = make_tuple(functionName, inputName, "");
     context.addClauses(key, *this);
+    return make_pair(inputName, name);
 }
 
-void NInteger::mapVariables(const string &functionName, const string &inputName, SatStaticAnalyzer &context) {
+pair<string, string> NInteger::mapVariables(const string &functionName, const string &inputName,
+                                            SatStaticAnalyzer &context) {
     FullVariableName key = make_tuple(functionName, inputName, "");
     context.addClauses(key, *this);
+    return make_pair(inputName, "");
 }

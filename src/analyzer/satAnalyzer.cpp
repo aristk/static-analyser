@@ -143,10 +143,17 @@ void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier 
     currentFunctionName = name;
 }
 
-void SatStaticAnalyzer::addReturn(const NIdentifier &variableName) {
+// TODO: join into one function following two
+void SatStaticAnalyzer::addOutput(const NIdentifier &variableName) {
     SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
 
-    currentFunction->addOutput(variableName.printName());
+    currentFunction->addOutput(currentFunctionName, variableName.name, variableName.field);
+}
+
+void SatStaticAnalyzer::addTrueOutput(const NIdentifier &variableName){
+    SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
+
+    currentFunction->addTrueOutput(currentFunctionName, variableName.name, variableName.field);
 }
 
 bool SatStaticAnalyzer::isCurrentInput(const NIdentifier &nIdentifier) {
@@ -164,16 +171,29 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const FullV
     SatFunctionDeclaration *calledFunction = getFunction(calledFunctionName);
 
     vector<string> originalInputs = calledFunction->getInputs();
+    map<string, string> correspondences;
 
     // map inputs
     for(int i = 0; i < methodCall.arguments.size(); i++) {
-        methodCall.arguments[i]->mapVariables(calledFunctionName, originalInputs[i], *this);
+        pair<string, string> correspondence =
+                methodCall.arguments[i]->mapVariables(calledFunctionName, originalInputs[i], *this);
+        correspondences.emplace(correspondence);
     }
 
     // map outputs
     for (auto i: calledFunction->getOutputs()) {
-
+        const string currentIdentifierName = correspondences[get<1>(i)];
+        if (currentIdentifierName == "") {
+            throw InputIsAStruct();
+        }
+        NIdentifier nIdentifier(currentIdentifierName, get<2>(i));
+        addClauses(i, nIdentifier);
     }
 
+    // map true output
+    if (get<0>(output) != "") {
+        NIdentifier nIdentifier(get<1>(output), get<2>(output));
+        addClauses(calledFunction->getTrueOutput(), nIdentifier);
+    }
 }
 

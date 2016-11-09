@@ -28,12 +28,16 @@ public:
         return inputsMap.count(name) > 0;
     }
 
-    void addOutput(const FullVariableName &outputVariable) {
-        outputStructs.push_back(outputVariable);
+    void addOutput(const string &functionName, const string &name, const string &field) {
+        outputStructs.push_back(make_tuple(functionName, name, field));
     }
 
-    void addTrueOutput(const FullVariableName &outputVariable) {
-        output = outputVariable;
+    void addTrueOutput(const string &functionName, const string &name, const string &field) {
+        output = make_tuple(functionName, name, field);
+    }
+
+    const FullVariableName getTrueOutput() const {
+        return output;
     }
 
     const vector<FullVariableName> getOutputs() const {
@@ -90,7 +94,9 @@ public:
         return functions.at(name).get();
     }
 
-    void addReturn(const NIdentifier &variableName);
+    void addOutput(const NIdentifier &variableName);
+
+    void addTrueOutput(const NIdentifier &variableName);
 
     void tryValue(bool value, const NIdentifier &nIdentifier, const NBinaryOperator &nBinaryOperator,
                   unsigned int newVarLast) const;

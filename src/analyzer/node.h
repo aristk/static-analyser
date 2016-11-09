@@ -36,7 +36,9 @@ public:
 
 class NExpression : public Node {
 public:
-    virtual void mapVariables(const string &functionName, const string &inputName, SatStaticAnalyzer &context) {
+    virtual pair<string, string> mapVariables(const string &functionName, const string &inputName,
+                                              SatStaticAnalyzer &context) {
+        // TODO: throw that only int and variables allowed here
         throw functionIsNotImplemented("mapVariables", name());
     }
 };
@@ -55,7 +57,8 @@ public:
 
     virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context);
 
-    virtual void mapVariables(const string &functionName, const string &inputName, SatStaticAnalyzer &context);
+    virtual pair<string, string> mapVariables(const string &functionName, const string &inputName,
+                                              SatStaticAnalyzer &context);
 };
 
 class NIdentifier : public NExpression {
@@ -74,7 +77,8 @@ public:
             return name;
     }
 
-    virtual void mapVariables(const string &functionName, const string &inputName, SatStaticAnalyzer& context);
+    virtual pair<string, string> mapVariables(const string &functionName, const string &inputName,
+                                              SatStaticAnalyzer &context);
 };
 
 class NMethodCall : public NExpression {
