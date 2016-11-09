@@ -11,9 +11,10 @@ class SatFunctionDeclaration {
     // std::unordered_set allow fast check that string is an input
     unordered_set<string> inputsMap;
     vector<string> inputs;
-    vector<string> outputs;
+    vector<FullVariableName> outputStructs;
+    FullVariableName output;
 public:
-    SatFunctionDeclaration(): inputs(), outputs() {}
+    SatFunctionDeclaration(): inputs(), outputStructs(), output() {}
 
     void addInput(const string &input) {
         if (isInput(input)) {
@@ -27,12 +28,16 @@ public:
         return inputsMap.count(name) > 0;
     }
 
-    void addOutput(const string &outputVariable) {
-        outputs.push_back(outputVariable);
+    void addOutput(const FullVariableName &outputVariable) {
+        outputStructs.push_back(outputVariable);
     }
 
-    const vector<string> getOutputs() const {
-        return outputs;
+    void addTrueOutput(const FullVariableName &outputVariable) {
+        output = outputVariable;
+    }
+
+    const vector<FullVariableName> getOutputs() const {
+        return outputStructs;
     }
 
     const vector<string> getInputs() const {
@@ -62,7 +67,7 @@ public:
     void addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator);
     void addClauses(const FullVariableName &lhs, const NIdentifier &nIdentifier);
 
-    void mapMethodCall(const NMethodCall &methodCall);
+    void mapMethodCall(const NMethodCall &methodCall, const FullVariableName &output);
 
     void addInputs(const VariableList &inputs, const NIdentifier &functionName);
 

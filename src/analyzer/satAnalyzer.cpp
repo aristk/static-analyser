@@ -158,7 +158,7 @@ bool SatStaticAnalyzer::isCurrentInput(const NIdentifier &nIdentifier) {
     return false;
 }
 
-void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall) {
+void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const FullVariableName &output) {
 
     string calledFunctionName = methodCall.id.name;
     SatFunctionDeclaration *calledFunction = getFunction(calledFunctionName);
@@ -167,7 +167,7 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall) {
 
     // map inputs
     for(int i = 0; i < methodCall.arguments.size(); i++) {
-        methodCall.arguments[i]->mapInput(calledFunctionName, originalInputs[i], *this);
+        methodCall.arguments[i]->mapVariables(calledFunctionName, originalInputs[i], *this);
     }
 
     // map outputs

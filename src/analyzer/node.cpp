@@ -33,7 +33,13 @@ void NReturnStatement::genCheck(SatStaticAnalyzer &context) const {
 }
 
 void NMethodCall::genCheck(SatStaticAnalyzer &context) const {
-    context.mapMethodCall(*this);
+    FullVariableName key = make_tuple("", "", "");
+    context.mapMethodCall(*this, key);
+}
+
+void NMethodCall::addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &context) {
+    FullVariableName key = make_tuple(context.getCurrentFunctionName(), nIdentifier.name, nIdentifier.field);
+    context.mapMethodCall(*this, key);
 }
 
 //TODO: somehow merge into one call
@@ -51,12 +57,12 @@ void NIdentifier::addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &contex
     context.addClauses(key, *this);
 }
 
-void NIdentifier::mapInput(const string &functionName, const string &inputName, SatStaticAnalyzer &context) {
+void NIdentifier::mapVariables(const string &functionName, const string &inputName, SatStaticAnalyzer &context) {
     FullVariableName key = make_tuple(functionName, inputName, "");
     context.addClauses(key, *this);
 }
 
-void NInteger::mapInput(const string &functionName, const string &inputName, SatStaticAnalyzer &context) {
+void NInteger::mapVariables(const string &functionName, const string &inputName, SatStaticAnalyzer &context) {
     FullVariableName key = make_tuple(functionName, inputName, "");
     context.addClauses(key, *this);
 }

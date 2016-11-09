@@ -36,8 +36,8 @@ public:
 
 class NExpression : public Node {
 public:
-    virtual void mapInput(const string &functionName, const string &inputName, SatStaticAnalyzer& context) {
-        throw functionIsNotImplemented("mapInput", name());
+    virtual void mapVariables(const string &functionName, const string &inputName, SatStaticAnalyzer &context) {
+        throw functionIsNotImplemented("mapVariables", name());
     }
 };
 
@@ -55,7 +55,7 @@ public:
 
     virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context);
 
-    virtual void mapInput(const string &functionName, const string &inputName, SatStaticAnalyzer& context);
+    virtual void mapVariables(const string &functionName, const string &inputName, SatStaticAnalyzer &context);
 };
 
 class NIdentifier : public NExpression {
@@ -74,7 +74,7 @@ public:
             return name;
     }
 
-    virtual void mapInput(const string &functionName, const string &inputName, SatStaticAnalyzer& context);
+    virtual void mapVariables(const string &functionName, const string &inputName, SatStaticAnalyzer& context);
 };
 
 class NMethodCall : public NExpression {
@@ -86,6 +86,8 @@ public:
     NMethodCall(const NIdentifier& id) : id(id) { }
 
     virtual void genCheck(SatStaticAnalyzer& context) const;
+
+    virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context);
 };
 
 class NBinaryOperator : public NExpression {
