@@ -56,25 +56,25 @@ class SatVariableIsNotDefinened: public exception {
     }
 };
 
-class genCheckNotImplemented: public exception {
+class functionIsNotImplemented: public exception {
+    string output;
     virtual const char* what() const throw() {
-        return "genCheck method is not implemented";
+        return output.c_str();
     }
+public:
+    functionIsNotImplemented(const string& name, const string& input):
+        output(name + " method for \"" + input + "\" is not implemented")
+    { }
+
 };
 
 class isAlreadyAnInput: public exception {
-    string name;
+    string output;
     virtual const char* what() const throw() {
-        return name.c_str();
+        return output.c_str();
     }
 public:
-    isAlreadyAnInput(const string& input) {
-        name = "Variable \"" + input + "\" already defined as input";
-    }
+    isAlreadyAnInput(const string& input) :
+            output("Variable \"" + input + "\" already defined as input") { }
 };
 
-class addClausesNotImplemented: public exception {
-    virtual const char* what() const throw() {
-        return "addClauses method is not implemented";
-    }
-};

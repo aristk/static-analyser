@@ -1,4 +1,4 @@
-#include "parser/node.h"
+#include "analyzer/node.h"
 #include "satAnalyzer.hpp"
 
 void SatStaticAnalyzer::generateCheck(const NBlock &root) {
@@ -11,25 +11,26 @@ void SatStaticAnalyzer::generateCheck(const NBlock &root) {
     }
 }
 
-unsigned int SatStaticAnalyzer::addNewVariable(const NIdentifier &nIdentifier) {
+unsigned int SatStaticAnalyzer::addNewVariable(const FullVariableName &key) {
     unsigned int nVars = solver->nVars();
-    variables[make_pair(nIdentifier.name, nIdentifier.field)] = nVars;
+
+    variables[key] = nVars;
     solver->new_vars(numOfBitsPerInt);
     return nVars;
 }
 
 unsigned int
 SatStaticAnalyzer::getIdentifierVariables(const NIdentifier &nIdentifier) {
-    pair<string, string> key = make_pair(nIdentifier.name, nIdentifier.field);
+    FullVariableName key = make_tuple(currentFunctionName, nIdentifier.name, nIdentifier.field);
 
     // if variables was not defined, define them
     if (variables.count(key) == 0) {
-        addNewVariable(nIdentifier);
+        addNewVariable(key);
     }
     return variables[key];
 }
 
-void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &nIdentifier) {
+void SatStaticAnalyzer::addClauses(const FullVariableName &lhs, const NIdentifier &nIdentifier) {
     const int variableCount = 2;
     vector<unsigned int> nVars(variableCount);
     nVars[0] = addNewVariable(lhs);
@@ -44,8 +45,8 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &nI
     }
 }
 
-void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NInteger &nInteger) {
-    unsigned int nVars = addNewVariable(nIdentifier);
+void SatStaticAnalyzer::addClauses(const FullVariableName &key, const NInteger &nInteger) {
+    unsigned int nVars = addNewVariable(key);
     vector<Lit> clause(1);
 
     int value = nInteger.value;
@@ -61,7 +62,8 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NIntege
 void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NBinaryOperator &nBinaryOperator) {
     const int variableCount = 3;
     vector<unsigned int> nVars(variableCount);
-    nVars[0] = addNewVariable(nIdentifier);
+    FullVariableName key = make_tuple(getCurrentFunctionName(), nIdentifier.name, nIdentifier.field);
+    nVars[0] = addNewVariable(key);
     // add new variable to handle output of NBinaryOperator
     unsigned int newVarLast = solver->nVars();
     solver->new_var();
@@ -154,5 +156,24 @@ bool SatStaticAnalyzer::isCurrentInput(const NIdentifier &nIdentifier) {
         return true;
     }
     return false;
+}
+
+void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall) {
+
+    string calledFunctionName = methodCall.id.name;
+    SatFunctionDeclaration *calledFunction = getFunction(calledFunctionName);
+
+    vector<string> originalInputs = calledFunction->getInputs();
+
+    // map inputs
+    for(int i = 0; i < methodCall.arguments.size(); i++) {
+        methodCall.arguments[i]->mapInput(calledFunctionName, originalInputs[i], *this);
+    }
+
+    // map outputs
+    for (auto i: calledFunction->getOutputs()) {
+
+    }
+
 }
 

@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include "parser/node.h"
+#include "analyzer/node.h"
 #include "analyzer/satAnalyzer.hpp"
 
 using namespace std;

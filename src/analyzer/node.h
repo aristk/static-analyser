@@ -19,22 +19,26 @@ typedef std::vector<NExpression*> ExpressionList;
 typedef std::vector<NIdentifier*> VariableList;
 
 class Node {
-    std::string name() const { return typeid(*this).name(); }
 public:
     virtual ~Node() {}
 
+    std::string name() const { return typeid(*this).name(); }
+
     virtual void genCheck(SatStaticAnalyzer& context) const {
-        std::cerr << name() << std::endl;
-        throw genCheckNotImplemented();
+        // TODO: bad practice, should be caught during compilation
+        throw functionIsNotImplemented("genCheck", name());
     }
 
     virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context) {
-        std::cerr << name() << std::endl;
-        throw addClausesNotImplemented();
+        throw functionIsNotImplemented("addClauses", name());
     }
 };
 
 class NExpression : public Node {
+public:
+    virtual void mapInput(const string &functionName, const string &inputName, SatStaticAnalyzer& context) {
+        throw functionIsNotImplemented("mapInput", name());
+    }
 };
 
 class NStatement : public Node {
@@ -48,12 +52,10 @@ class NInteger : public NExpression {
 public:
     int value;
     NInteger(int value) : value(value) { }
-    virtual void genCheck(SatStaticAnalyzer& context) const
-    {
-        throw genCheckNotImplemented();
-    }
 
     virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context);
+
+    virtual void mapInput(const string &functionName, const string &inputName, SatStaticAnalyzer& context);
 };
 
 class NIdentifier : public NExpression {
@@ -71,6 +73,8 @@ public:
         else
             return name;
     }
+
+    virtual void mapInput(const string &functionName, const string &inputName, SatStaticAnalyzer& context);
 };
 
 class NMethodCall : public NExpression {

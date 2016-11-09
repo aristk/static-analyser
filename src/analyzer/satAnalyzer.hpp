@@ -1,13 +1,16 @@
 #include "analyzer.hpp"
 #include "cryptominisat.h"
-#include <set>
+#include <unordered_set>
 
 class NBlock;
 using namespace CMSat;
 
+typedef tuple<string, string, string> FullVariableName;
+
 class SatFunctionDeclaration {
-    // std::set allow fast check that string is an input
-    set<string> inputs;
+    // std::unordered_set allow fast check that string is an input
+    unordered_set<string> inputsMap;
+    vector<string> inputs;
     vector<string> outputs;
 public:
     SatFunctionDeclaration(): inputs(), outputs() {}
@@ -16,15 +19,24 @@ public:
         if (isInput(input)) {
             throw isAlreadyAnInput(input);
         }
-        inputs.emplace(input);
+        inputsMap.emplace(input);
+        inputs.push_back(input);
     }
 
     bool isInput(const string & name) const {
-        return inputs.count(name) > 0;
+        return inputsMap.count(name) > 0;
     }
 
     void addOutput(const string &outputVariable) {
         outputs.push_back(outputVariable);
+    }
+
+    const vector<string> getOutputs() const {
+        return outputs;
+    }
+
+    const vector<string> getInputs() const {
+        return inputs;
     }
 };
 
@@ -34,27 +46,33 @@ class SatStaticAnalyzer : public StaticAnalyzer {
 
     std::unique_ptr<SATSolver> solver;
 
-    // relation of NIdentifier to variables
-    map<pair<string, string>, unsigned int> variables;
+    // relation of function, struct, field (NIdentifier) to Boolean variables
+    map<FullVariableName, unsigned int> variables;
 
     map<string, std::unique_ptr<SatFunctionDeclaration> > functions;
 
     string currentFunctionName;
 
     unsigned int getIdentifierVariables(const NIdentifier &nIdentifier);
-    unsigned int addNewVariable(const NIdentifier &nIdentifier);
+    unsigned int addNewVariable(const FullVariableName &nIdentifier);
 public:
     SatStaticAnalyzer() : numOfBitsPerInt(2), solver(new SATSolver), variables(), functions(), currentFunctionName() {}
 
-    void addClauses(const NIdentifier &lhs, const NInteger &nInteger);
+    void addClauses(const FullVariableName &lhs, const NInteger &nInteger);
     void addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator);
-    void addClauses(const NIdentifier &lhs, const NIdentifier &nIdentifier);
+    void addClauses(const FullVariableName &lhs, const NIdentifier &nIdentifier);
+
+    void mapMethodCall(const NMethodCall &methodCall);
 
     void addInputs(const VariableList &inputs, const NIdentifier &functionName);
 
     void generateCheck(const NBlock& root);
 
     bool isCurrentInput(const NIdentifier &nIdentifier);
+
+    const string getCurrentFunctionName() const {
+        return currentFunctionName;
+    }
 
     SATSolver *getSolver() const {
         return solver.get();

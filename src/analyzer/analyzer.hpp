@@ -2,7 +2,7 @@
 #include <map>
 
 #include "assignment.hpp"
-#include "parser/node.h"
+#include "analyzer/node.h"
 
 using namespace std;
 
