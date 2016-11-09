@@ -62,6 +62,17 @@ class genCheckNotImplemented: public exception {
     }
 };
 
+class isAlreadyAnInput: public exception {
+    string name;
+    virtual const char* what() const throw() {
+        return name.c_str();
+    }
+public:
+    isAlreadyAnInput(const string& input) {
+        name = "Variable \"" + input + "\" already defined as input";
+    }
+};
+
 class addClausesNotImplemented: public exception {
     virtual const char* what() const throw() {
         return "addClauses method is not implemented";

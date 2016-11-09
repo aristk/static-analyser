@@ -147,3 +147,12 @@ void SatStaticAnalyzer::addReturn(const NIdentifier &variableName) {
     currentFunction->addOutput(variableName.printName());
 }
 
+bool SatStaticAnalyzer::isCurrentInput(const NIdentifier &nIdentifier) {
+    SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
+
+    if (currentFunction->isInput(nIdentifier.name)) {
+        return true;
+    }
+    return false;
+}
+

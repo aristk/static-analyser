@@ -80,7 +80,8 @@ public:
     NMethodCall(const NIdentifier& id, ExpressionList& arguments) :
             id(id), arguments(arguments) { }
     NMethodCall(const NIdentifier& id) : id(id) { }
-//    virtual llvm::Value* codeGen(CodeGenContext& context);
+
+    virtual void genCheck(SatStaticAnalyzer& context) const;
 };
 
 class NBinaryOperator : public NExpression {
@@ -117,7 +118,10 @@ public:
     NExpression& expression;
     NExpressionStatement(NExpression& expression) :
             expression(expression) { }
-//    virtual llvm::Value* codeGen(CodeGenContext& context);
+
+    virtual void genCheck(SatStaticAnalyzer& context) const {
+        expression.genCheck(context);
+    }
 };
 
 class NReturnStatement: public NStatement {

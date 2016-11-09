@@ -20,11 +20,21 @@ void NFunctionDeclaration::genCheck(SatStaticAnalyzer &context) const {
 }
 
 void NVariableDeclaration::genCheck(SatStaticAnalyzer &context) const {
+    // if variable is a struct and is an input add it to outputs
+    if((this->id.field != "") && (context.isCurrentInput(id))) {
+        context.addReturn(id);
+    }
+
     assignmentExpr->addClauses(id, context);
 }
 
 void NReturnStatement::genCheck(SatStaticAnalyzer &context) const {
     context.addReturn(this->variable);
+}
+
+void NMethodCall::genCheck(SatStaticAnalyzer &context) const {
+    // TODO: implement
+    throw genCheckNotImplemented();
 }
 
 //TODO: somehow merge into one call

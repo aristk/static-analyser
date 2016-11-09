@@ -1,17 +1,26 @@
 #include "analyzer.hpp"
 #include "cryptominisat.h"
+#include <set>
 
 class NBlock;
 using namespace CMSat;
 
 class SatFunctionDeclaration {
-    vector<string> inputs;
+    // std::set allow fast check that string is an input
+    set<string> inputs;
     vector<string> outputs;
 public:
     SatFunctionDeclaration(): inputs(), outputs() {}
 
-    void addInput(const string& input) {
-        inputs.push_back(input);
+    void addInput(const string &input) {
+        if (isInput(input)) {
+            throw isAlreadyAnInput(input);
+        }
+        inputs.emplace(input);
+    }
+
+    bool isInput(const string & name) const {
+        return inputs.count(name) > 0;
     }
 
     void addOutput(const string &outputVariable) {
@@ -44,6 +53,8 @@ public:
     void addInputs(const VariableList &inputs, const NIdentifier &functionName);
 
     void generateCheck(const NBlock& root);
+
+    bool isCurrentInput(const NIdentifier &nIdentifier);
 
     SATSolver *getSolver() const {
         return solver.get();

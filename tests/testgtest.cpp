@@ -9,6 +9,15 @@ TEST(testCore, PositiveTests) {
     char* argv[] = { "", "test/example.myprog" };
 
     EXPECT_EQ(0, core(2, argv));
+
+    argv[1] = "test/simpleEQ.myprog";
+
+    EXPECT_EQ(0, core(2, argv));
+
+    argv[1] = "test/simpleNEQ.myprog";
+
+    EXPECT_EQ(0, core(2, argv));
+
 }
 
 TEST(testCore, NegativeTests) {
