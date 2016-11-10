@@ -31,18 +31,8 @@ int core(int argc, char **argv)
     } catch (exception& e) {
         cerr << "Exception caught:" << endl;
         cerr << e.what() << endl;
-    }
-
-
-    // TODO: properly delete programBlock
-    StaticAnalyzer *analyzer = NULL;
-    try {
-        analyzer = new SymbolicStaticAnalyzer(programBlock);
-    } catch(exception& e) {
-        cerr << "Exception caught:" << endl;
-        cerr << e.what() << endl;
         returnValue = 1;
     }
-    delete(analyzer);
+
     return returnValue;
 }

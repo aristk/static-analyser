@@ -1,6 +1,7 @@
-#include "analyzer.hpp"
 #include "cryptominisat.h"
 #include <unordered_set>
+#include <vector>
+#include <map>
 
 class NBlock;
 using namespace CMSat;
@@ -47,6 +48,11 @@ public:
     const vector<string> getInputs() const {
         return inputs;
     }
+};
+
+class StaticAnalyzer {
+public:
+    virtual ~StaticAnalyzer() {}
 };
 
 class SatStaticAnalyzer : public StaticAnalyzer {
