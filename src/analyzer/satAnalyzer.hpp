@@ -98,5 +98,5 @@ public:
 
     void addTrueOutput(const NIdentifier &variableName);
 
-    bool tryValue(bool value, const NIdentifier &nIdentifier, unsigned int newVarLast) const;
+    bool isConstant(int &returnValue, const NIdentifier &nIdentifier, unsigned int newVarLast) const;
 };

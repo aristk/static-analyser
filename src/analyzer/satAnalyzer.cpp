@@ -114,38 +114,33 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NBinary
         solver->add_clause(UnitClause);
     }
 
-    value = false;
-    if (tryValue(value, nIdentifier, newVarLast)) {
-        cout << nIdentifier.printName() << " has constant value " << value <<
-             " at line " << nBinaryOperator.lineno << endl;
-    }
-
-    value = true;
-    if (tryValue(value, nIdentifier, newVarLast)) {
-        cout << nIdentifier.printName() << " has constant value " << value <<
+    // TODO: good option here is to introduce a class with undef and int values of return
+    int returnValue;
+    if (isConstant(returnValue, nIdentifier, newVarLast)) {
+        cout << nIdentifier.printName() << " has constant value " << returnValue <<
              " at line " << nBinaryOperator.lineno << endl;
     }
 }
 
 bool
-SatStaticAnalyzer::tryValue(bool value, const NIdentifier &nIdentifier, unsigned int newVarLast) const {
-    vector<Lit> assumptions(1);
+SatStaticAnalyzer::isConstant(int &returnValue, const NIdentifier &nIdentifier, unsigned int newVarLast) const {
+    bool result = false;
 
-    assumptions[0] = Lit(newVarLast, value);
-    lbool ret;
-    vector<lbool> model;
+    solver->solve();
 
-//    ret = solver->solve();
-//    model = solver->get_model();
+    // TODO: assume that solver found all unit clauses (should be checked)
+    vector<Lit> unitLiterals = solver->get_zero_assigned_lits();
 
-    ret = solver->solve(&assumptions);
-
-//    model = solver->get_model();
-
-    if (ret == l_False) {
-        return true;
+    for(auto i: unitLiterals) {
+        if ((i.var() >= newVarLast) && (i.var() < newVarLast + numOfBitsPerInt)) {
+            int bitPosition = i.var() - newVarLast;
+            returnValue += (1 << bitPosition) * (1-i.sign());
+            // TODO: in general case we should check that all bits are constant
+            result = true;
+        }
     }
-    return false;
+
+    return result;
 }
 
 void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier &functionName) {
