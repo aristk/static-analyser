@@ -98,6 +98,5 @@ public:
 
     void addTrueOutput(const NIdentifier &variableName);
 
-    void tryValue(bool value, const NIdentifier &nIdentifier, const NBinaryOperator &nBinaryOperator,
-                  unsigned int newVarLast) const;
+    bool tryValue(bool value, const NIdentifier &nIdentifier, unsigned int newVarLast) const;
 };

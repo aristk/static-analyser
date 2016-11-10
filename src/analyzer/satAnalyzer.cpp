@@ -14,7 +14,10 @@ void SatStaticAnalyzer::generateCheck(const NBlock &root) {
 unsigned int SatStaticAnalyzer::addNewVariable(const FullVariableName &key) {
     unsigned int nVars = solver->nVars();
 
-    variables[key] = nVars;
+    // in case of dummy variables, do not map them
+    if (get<1>(key) != "") {
+        variables[key] = nVars;
+    }
     solver->new_vars(numOfBitsPerInt);
     return nVars;
 }
@@ -61,14 +64,17 @@ void SatStaticAnalyzer::addClauses(const FullVariableName &key, const NInteger &
 // TODO: required automatic tests
 void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NBinaryOperator &nBinaryOperator) {
     const int variableCount = 3;
-    vector<unsigned int> nVars(variableCount);
-    FullVariableName key = make_tuple(getCurrentFunctionName(), nIdentifier.name, nIdentifier.field);
-    nVars[0] = addNewVariable(key);
-    // add new variable to handle output of NBinaryOperator
-    unsigned int newVarLast = solver->nVars();
-    solver->new_var();
+    vector<unsigned int> nVars(variableCount+1);
+
+    // create dummy variables for computations
+    nVars[0] = addNewVariable("");
     nVars[1] = getIdentifierVariables(nBinaryOperator.lhs);
     nVars[2] = getIdentifierVariables(nBinaryOperator.rhs);
+
+    // add new variables to handle output of NBinaryOperator
+    unsigned int newVarLast = solver->nVars();
+    FullVariableName key = make_tuple(getCurrentFunctionName(), nIdentifier.name, nIdentifier.field);
+    nVars[3] = addNewVariable(key);
 
     vector<unsigned int> clause(variableCount);
     vector<Lit> binClause(2);
@@ -81,6 +87,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NBinary
     // &-gate is modeled as
     // (newVar0 | -newVarLast) & ... & (newVarN | -newVarLast) &
     // (-newVar0 | ... | -newVarN | newVarLast)
+    bool value = nBinaryOperator.op;
     for(int i = 0; i < numOfBitsPerInt; i++) {
         for (int j = 0; j < variableCount; j++) {
             clause[j] = nVars[j] + i;
@@ -91,38 +98,54 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NBinary
 
         // newVarLast | -newVarI
         binClause[0] = Lit(clause[0], true);
-        binClause[1] = Lit(newVarLast, false);
+        binClause[1] = Lit(newVarLast, value);
         solver->add_clause(binClause);
 
         // (-newVar0 | ... | -newVarN | newVarLast)
         bigClause[i] = Lit(clause[0], false);
     }
-    bigClause[numOfBitsPerInt] = Lit(newVarLast, true);
+    bigClause[numOfBitsPerInt] = Lit(newVarLast, !value);
     solver->add_clause(bigClause);
 
-    tryValue(false, nIdentifier, nBinaryOperator, newVarLast);
+    // force upper bits of representation to zeros
+    vector<Lit> UnitClause(1);
+    for (int i = 1; i < numOfBitsPerInt; i++) {
+        UnitClause[0] = Lit(newVarLast + i, true);
+        solver->add_clause(UnitClause);
+    }
 
-    tryValue(true, nIdentifier, nBinaryOperator, newVarLast);
+    value = false;
+    if (tryValue(value, nIdentifier, newVarLast)) {
+        cout << nIdentifier.printName() << " has constant value " << value <<
+             " at line " << nBinaryOperator.lineno << endl;
+    }
+
+    value = true;
+    if (tryValue(value, nIdentifier, newVarLast)) {
+        cout << nIdentifier.printName() << " has constant value " << value <<
+             " at line " << nBinaryOperator.lineno << endl;
+    }
 }
 
-void
-SatStaticAnalyzer::tryValue(bool value, const NIdentifier &nIdentifier, const NBinaryOperator &nBinaryOperator,
-                            unsigned int newVarLast) const {
+bool
+SatStaticAnalyzer::tryValue(bool value, const NIdentifier &nIdentifier, unsigned int newVarLast) const {
     vector<Lit> assumptions(1);
 
     assumptions[0] = Lit(newVarLast, value);
     lbool ret;
-/*
     vector<lbool> model;
-    ret = solver->solve();
-    model = solver->get_model();
-*/
+
+//    ret = solver->solve();
+//    model = solver->get_model();
+
     ret = solver->solve(&assumptions);
 
+//    model = solver->get_model();
+
     if (ret == l_False) {
-        cout << nIdentifier.printName() << " has constant value " << (value ^ nBinaryOperator.op) <<
-             " at line " << nBinaryOperator.lineno << endl;
+        return true;
     }
+    return false;
 }
 
 void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier &functionName) {
