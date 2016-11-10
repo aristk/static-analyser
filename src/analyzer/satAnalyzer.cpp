@@ -16,6 +16,10 @@ unsigned int SatStaticAnalyzer::addNewVariable(const FullVariableName &key) {
 
     // in case of dummy variables, do not map them
     if (get<1>(key) != "") {
+        if (variables.count(key) > 0) {
+            // TODO: all clauses with old variables should removed, current SAT solver interface could not do that
+            // so right now we just adding new variables and clauses
+        }
         variables[key] = nVars;
     }
     solver->new_vars(numOfBitsPerInt);
@@ -23,9 +27,7 @@ unsigned int SatStaticAnalyzer::addNewVariable(const FullVariableName &key) {
 }
 
 unsigned int
-SatStaticAnalyzer::getIdentifierVariables(const NIdentifier &nIdentifier) {
-    FullVariableName key = make_tuple(currentFunctionName, nIdentifier.name, nIdentifier.field);
-
+SatStaticAnalyzer::getIdentifierVariables(const FullVariableName &key) {
     // if variables was not defined, define them
     if (variables.count(key) == 0) {
         addNewVariable(key);
@@ -34,10 +36,17 @@ SatStaticAnalyzer::getIdentifierVariables(const NIdentifier &nIdentifier) {
 }
 
 void SatStaticAnalyzer::addClauses(const FullVariableName &lhs, const NIdentifier &nIdentifier) {
+
+    localVariableName VTLhs = make_pair(get<1>(lhs), get<2>(lhs));
+    localVariableName VTRhs = make_pair(nIdentifier.name, nIdentifier.field);
+    unique_ptr<Transition> transition(new VariableTransition(VTLhs, VTRhs));
+    addTransition(move(transition));
+
     const int variableCount = 2;
     vector<unsigned int> nVars(variableCount);
-    nVars[0] = addNewVariable(lhs);
-    nVars[1] = getIdentifierVariables(nIdentifier);
+    nVars[0] = getIdentifierVariables(lhs);
+    FullVariableName key = make_tuple(currentFunctionName, nIdentifier.name, nIdentifier.field);
+    nVars[1] = getIdentifierVariables(key);
     vector<unsigned int> clause(variableCount);
 
     for (int i = 0; i < numOfBitsPerInt; i++) {
@@ -49,10 +58,14 @@ void SatStaticAnalyzer::addClauses(const FullVariableName &lhs, const NIdentifie
 }
 
 void SatStaticAnalyzer::addClauses(const FullVariableName &key, const NInteger &nInteger) {
+    int value = nInteger.value;
+    localVariableName lhs = make_pair(get<1>(key), get<2>(key));
+    unique_ptr<IntegerTransition> transition(new IntegerTransition(lhs, value));
+    addTransition(move(transition));
+
+
     unsigned int nVars = addNewVariable(key);
     vector<Lit> clause(1);
-
-    int value = nInteger.value;
 
     for (int i = 0; i < numOfBitsPerInt; i++) {
         clause[0] = Lit(nVars + i, (bool) (true - (value & 0b1)));
@@ -63,13 +76,22 @@ void SatStaticAnalyzer::addClauses(const FullVariableName &key, const NInteger &
 
 // TODO: required automatic tests
 void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NBinaryOperator &nBinaryOperator) {
+    localVariableName lhs = make_pair(nIdentifier.name, nIdentifier.name);
+    localVariableName rhs1 = make_pair(nBinaryOperator.lhs.name, nBinaryOperator.lhs.field);
+    localVariableName rhs2 = make_pair(nBinaryOperator.rhs.name, nBinaryOperator.rhs.field);
+
+    unique_ptr<Transition> transition(new EquationTransition(lhs, rhs1, rhs2, nBinaryOperator.op));
+    addTransition(move(transition));
+
     const int variableCount = 3;
     vector<unsigned int> nVars(variableCount+1);
 
     // create dummy variables for computations
     nVars[0] = addNewVariable("");
-    nVars[1] = getIdentifierVariables(nBinaryOperator.lhs);
-    nVars[2] = getIdentifierVariables(nBinaryOperator.rhs);
+    FullVariableName key1 = make_tuple(currentFunctionName, nBinaryOperator.lhs.name, nBinaryOperator.lhs.field);
+    nVars[1] = getIdentifierVariables(key1);
+    FullVariableName key2 = make_tuple(currentFunctionName, nBinaryOperator.rhs.name, nBinaryOperator.rhs.field);
+    nVars[2] = getIdentifierVariables(key2);
 
     // add new variables to handle output of NBinaryOperator
     unsigned int newVarLast = solver->nVars();
@@ -116,31 +138,39 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NBinary
 
     // TODO: good option here is to introduce a class with undef and int values of return
     int returnValue;
-    if (isConstant(returnValue, nIdentifier, newVarLast)) {
-        cout << nIdentifier.printName() << " has constant value " << returnValue <<
-             " at line " << nBinaryOperator.lineno << endl;
+    if (isConstant(returnValue, nIdentifier)) {
+        cout << nIdentifier.printName() << " from BinaryOperator has constant value " << returnValue <<
+             " at line " << nBinaryOperator.lineNumber << endl;
     }
 }
 
 bool
-SatStaticAnalyzer::isConstant(int &returnValue, const NIdentifier &nIdentifier, unsigned int newVarLast) const {
-    bool result = false;
+SatStaticAnalyzer::isConstant(int &returnValue, const NIdentifier &nIdentifier) {
+
+    FullVariableName key = make_tuple(currentFunctionName, nIdentifier.name, nIdentifier.field);
+    const unsigned int lowerBitVariable = getIdentifierVariables(key);
 
     solver->solve();
+
+    int countEqualBits = 0;
+    returnValue = 0;
 
     // TODO: assume that solver found all unit clauses (should be checked)
     vector<Lit> unitLiterals = solver->get_zero_assigned_lits();
 
     for(auto i: unitLiterals) {
-        if ((i.var() >= newVarLast) && (i.var() < newVarLast + numOfBitsPerInt)) {
-            int bitPosition = i.var() - newVarLast;
+        if ((i.var() >= lowerBitVariable) && (i.var() < lowerBitVariable + numOfBitsPerInt)) {
+            int bitPosition = i.var() - lowerBitVariable;
             returnValue += (1 << bitPosition) * (1-i.sign());
-            // TODO: in general case we should check that all bits are constant
-            result = true;
+            countEqualBits++;
         }
     }
 
-    return result;
+    if (countEqualBits == numOfBitsPerInt) {
+        return true;
+    }
+
+    return false;
 }
 
 void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier &functionName) {
@@ -192,12 +222,17 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const FullV
     map<string, string> correspondences;
 
     // map inputs
+    // TODO: should be something more complicated here:
+    // if inside call function a struct is used and it is defined in current function, mapping should be done
     for(int i = 0; i < methodCall.arguments.size(); i++) {
         pair<string, string> correspondence =
                 methodCall.arguments[i]->mapVariables(calledFunctionName, originalInputs[i], *this);
         correspondences.emplace(correspondence);
     }
 
+    // TODO: since we cannot remove variables and clauses, we need to store transitions separately, to allow fast
+    // manipulations with function calls: add/remove mapping between inputs/outputs. We will be forced to delete and
+    // create new instances of the solver to avoid those problems
     // map outputs
     for (auto i: calledFunction->getOutputs()) {
         const string currentIdentifierName = correspondences[get<1>(i)];
@@ -209,9 +244,15 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const FullV
     }
 
     // map true output
+    NIdentifier nIdentifier(get<1>(output), get<2>(output));
     if (get<0>(output) != "") {
-        NIdentifier nIdentifier(get<1>(output), get<2>(output));
         addClauses(calledFunction->getTrueOutput(), nIdentifier);
+    }
+
+    int returnValue;
+    if (isConstant(returnValue, nIdentifier)) {
+        cout << nIdentifier.printName() << " from MethodCall has constant value " << returnValue <<
+             " at line " << methodCall.lineNumber << endl;
     }
 }
 

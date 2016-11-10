@@ -85,9 +85,9 @@ class NMethodCall : public NExpression {
 public:
     const NIdentifier& id;
     ExpressionList arguments;
-    NMethodCall(const NIdentifier& id, ExpressionList& arguments) :
-            id(id), arguments(arguments) { }
-    NMethodCall(const NIdentifier& id) : id(id) { }
+    int lineNumber;
+    NMethodCall(const NIdentifier& id, ExpressionList& arguments, int lineNumber) :
+            id(id), arguments(arguments), lineNumber(lineNumber) { }
 
     virtual void genCheck(SatStaticAnalyzer& context) const;
 
@@ -99,9 +99,9 @@ public:
     bool op;
     NIdentifier& lhs;
     NIdentifier& rhs;
-    int lineno;
-    NBinaryOperator(NIdentifier& lhs, int op, NIdentifier& rhs, int lineno) :
-            lhs(lhs), rhs(rhs), op(op), lineno(lineno) { }
+    int lineNumber;
+    NBinaryOperator(NIdentifier& lhs, int op, NIdentifier& rhs, int lineNumber) :
+            lhs(lhs), rhs(rhs), op(op), lineNumber(lineNumber) { }
 
     virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context);
 };

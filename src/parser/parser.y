@@ -92,7 +92,7 @@ numeric : TINTEGER { $$ = new NInteger(atol($1->c_str())); delete $1; }
 
 /* TODO: some issues with lineno */
 expr : ident TEQUAL expr { $$ = new NAssignment(*$<ident>1, *$3); }
-| ident TLPAREN call_args TRPAREN { $$ = new NMethodCall(*$1, *$3); delete $3; }
+| ident TLPAREN call_args TRPAREN { $$ = new NMethodCall(*$1, *$3, yyget_lineno()); delete $3; }
 | ident { $<ident>$ = $1; }
 | numeric
 | ident comparison ident { $$ = new NBinaryOperator(*$1, $2==TCEQ, *$3, yyget_lineno()); }

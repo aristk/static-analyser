@@ -56,6 +56,12 @@ class SatVariableIsNotDefinened: public exception {
     }
 };
 
+class SatVariableAreAlreadyDefinened: public exception {
+    virtual const char* what() const throw() {
+        return "Current variable was already used.";
+    }
+};
+
 class functionIsNotImplemented: public exception {
     string output;
     virtual const char* what() const throw() {
