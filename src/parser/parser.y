@@ -83,8 +83,8 @@ func_decl_args : /*blank*/  { $$ = new VariableList(); }
 | func_decl_args TCOMMA ident { $1->push_back($<ident>3); }
 ;
 
-ident : TIDENTIFIER { $$ = new NIdentifier(*$1); delete $1; }
-| TIDENTIFIER TDOT TIDENTIFIER { $$ = new NIdentifier(*$1, *$3); delete $1; delete $3;}
+ident : TIDENTIFIER { $$ = new NIdentifier(*$1, yyget_lineno()); delete $1; }
+| TIDENTIFIER TDOT TIDENTIFIER { $$ = new NIdentifier(*$1, *$3, yyget_lineno()); delete $1; delete $3;}
 ;
 
 numeric : TINTEGER { $$ = new NInteger(atol($1->c_str())); delete $1; }
@@ -92,10 +92,10 @@ numeric : TINTEGER { $$ = new NInteger(atol($1->c_str())); delete $1; }
 
 /* TODO: some issues with lineno */
 expr : ident TEQUAL expr { $$ = new NAssignment(*$<ident>1, *$3); }
-| ident TLPAREN call_args TRPAREN { $$ = new NMethodCall(*$1, *$3, yyget_lineno()); delete $3; }
+| ident TLPAREN call_args TRPAREN { $$ = new NMethodCall(*$1, *$3); delete $3; }
 | ident { $<ident>$ = $1; }
 | numeric
-| ident comparison ident { $$ = new NBinaryOperator(*$1, $2==TCEQ, *$3, yyget_lineno()); }
+| ident comparison ident { $$ = new NBinaryOperator(*$1, $2==TCEQ, *$3); }
 | TLPAREN expr TRPAREN { $$ = $2; }
 ;
 

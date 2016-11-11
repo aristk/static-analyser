@@ -11,8 +11,10 @@ void SatStaticAnalyzer::generateCheck(const NBlock &root) {
     }
 }
 
-unsigned int SatStaticAnalyzer::addNewVariable(const FullVariableName &key) {
+unsigned int SatStaticAnalyzer::addNewVariable(const NIdentifier &nIdentifier) {
     unsigned int nVars = solver->nVars();
+
+    FullVariableName key = NIdentifierToFullName(nIdentifier);
 
     // in case of dummy variables, do not map them
     if (get<1>(key) != "") {
@@ -27,21 +29,21 @@ unsigned int SatStaticAnalyzer::addNewVariable(const FullVariableName &key) {
 }
 
 unsigned int
-SatStaticAnalyzer::getIdentifierVariables(const FullVariableName &key) {
+SatStaticAnalyzer::getIdentifierVariables(const NIdentifier &nIdentifier) {
+    FullVariableName key = NIdentifierToFullName(nIdentifier);
     // if variables was not defined, define them
     if (variables.count(key) == 0) {
-        addNewVariable(key);
+        addNewVariable(nIdentifier);
     }
     return variables[key];
 }
 
-void SatStaticAnalyzer::addClauses(const FullVariableName &lhs, const NIdentifier &nIdentifier) {
+void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &nIdentifier) {
 
     const int variableCount = 2;
     vector<unsigned int> nVars(variableCount);
     nVars[0] = getIdentifierVariables(lhs);
-    FullVariableName key = make_tuple(currentFunctionName, nIdentifier.name, nIdentifier.field);
-    nVars[1] = getIdentifierVariables(key);
+    nVars[1] = getIdentifierVariables(nIdentifier);
     vector<unsigned int> clause(variableCount);
 
     for (int i = 0; i < numOfBitsPerInt; i++) {
@@ -52,7 +54,7 @@ void SatStaticAnalyzer::addClauses(const FullVariableName &lhs, const NIdentifie
     }
 }
 
-void SatStaticAnalyzer::addClauses(const FullVariableName &key, const NInteger &nInteger) {
+void SatStaticAnalyzer::addClauses(const NIdentifier &key, const NInteger &nInteger) {
     int value = nInteger.value;
 
     unsigned int nVars = addNewVariable(key);
@@ -66,16 +68,14 @@ void SatStaticAnalyzer::addClauses(const FullVariableName &key, const NInteger &
 }
 
 // TODO: required automatic tests
-void SatStaticAnalyzer::addClauses(const FullVariableName &key, const NBinaryOperator &nBinaryOperator) {
+void SatStaticAnalyzer::addClauses(const NIdentifier &key, const NBinaryOperator &nBinaryOperator) {
     const int variableCount = 3;
     vector<unsigned int> nVars(variableCount+1);
 
     // create dummy variables for computations
-    nVars[0] = addNewVariable("");
-    FullVariableName key1 = make_tuple(currentFunctionName, nBinaryOperator.lhs.name, nBinaryOperator.lhs.field);
-    nVars[1] = getIdentifierVariables(key1);
-    FullVariableName key2 = make_tuple(currentFunctionName, nBinaryOperator.rhs.name, nBinaryOperator.rhs.field);
-    nVars[2] = getIdentifierVariables(key2);
+    nVars[0] = addNewVariable(NIdentifier("","",0));
+    nVars[1] = getIdentifierVariables(nBinaryOperator.lhs);
+    nVars[2] = getIdentifierVariables(nBinaryOperator.rhs);
 
     // add new variables to handle output of NBinaryOperator
     unsigned int newVarLast = solver->nVars();
@@ -122,13 +122,13 @@ void SatStaticAnalyzer::addClauses(const FullVariableName &key, const NBinaryOpe
     // TODO: good option here is to introduce a class with undef and int values of return
     int returnValue;
     if (isConstant(returnValue, key)) {
-        cout << fullNameToSting(key) << " from binOp is " << returnValue <<
-             " at line " << nBinaryOperator.lineNumber << endl;
+        cout << key.printName() << " from binOp is " << returnValue <<
+             " at line " << key.lineNumber << endl;
     }
 }
 
 bool
-SatStaticAnalyzer::isConstant(int &returnValue, const FullVariableName &key) {
+SatStaticAnalyzer::isConstant(int &returnValue, const NIdentifier &key) {
 
     const unsigned int lowerBitVariable = getIdentifierVariables(key);
 
@@ -183,7 +183,7 @@ void SatStaticAnalyzer::addOutput(const NIdentifier &variableName) {
 void SatStaticAnalyzer::addTrueOutput(const NIdentifier &variableName){
     SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
 
-    currentFunction->addTrueOutput(currentFunctionName, variableName.name, variableName.field);
+    currentFunction->addTrueOutput(variableName);
 }
 
 bool SatStaticAnalyzer::isCurrentInput(const NIdentifier &nIdentifier) {
@@ -195,7 +195,7 @@ bool SatStaticAnalyzer::isCurrentInput(const NIdentifier &nIdentifier) {
     return false;
 }
 
-void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const FullVariableName &output) {
+void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIdentifier &output) {
 
     string calledFunctionName = methodCall.id.name;
     SatFunctionDeclaration *calledFunction = getFunction(calledFunctionName);
@@ -224,15 +224,14 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const FullV
 
 
     // map true output
-    NIdentifier nIdentifier(get<1>(output), get<2>(output));
-    if (get<0>(output) != "") {
-        addClauses(calledFunction->getTrueOutput(), nIdentifier);
+    if (output.name != "") {
+        addClauses(calledFunction->getTrueOutput(), output);
     }
 
     int returnValue;
     if (isConstant(returnValue, output)) {
-        cout << fullNameToSting(output) << " from func is " << returnValue <<
-             " at line " << methodCall.lineNumber << endl;
+        cout << output.printName() << " from func is " << returnValue <<
+             " at line " << output.lineNumber << endl;
     }
 }
 

@@ -528,7 +528,7 @@ inline void PropEngine::propTriHelperAnyOrder(
 #ifdef __GNUC__
 #define likely(x)      __builtin_expect(!!(x), 1)
 #define unlikely(x)    __builtin_expect(!!(x), 0)
-__attribute__((optimize("no-unroll-loops")))
+//__attribute__((optimize("no-unroll-loops")))
 #else
 #define likely(x)      (x)
 #define unlikely(x)    (x)

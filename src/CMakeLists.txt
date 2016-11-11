@@ -11,6 +11,7 @@ IF(FLEX_FOUND)
             OUTPUT ${FlexOutput}
             COMMAND ${FLEX_EXECUTABLE}
                 -o ${FlexOutput}
+                --yylineno
             ${FlexDir}/tokens.l
     )
 ENDIF()

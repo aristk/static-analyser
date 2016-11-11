@@ -11,10 +11,10 @@ class SatFunctionDeclaration {
     unordered_set<string> inputsMap;
     vector<string> inputs;
     vector<FullVariableName> outputStructs;
-    FullVariableName output;
+    NIdentifier output;
     unique_ptr<NBlock> body;
 public:
-    SatFunctionDeclaration(): inputs(), outputStructs(), output(), body() {}
+    SatFunctionDeclaration(): inputs(), outputStructs(), output("", "", 0), body() {}
 
     void addInput(const string &input) {
         if (isInput(input)) {
@@ -40,11 +40,11 @@ public:
         outputStructs.push_back(make_tuple(functionName, name, field));
     }
 
-    void addTrueOutput(const string &functionName, const string &name, const string &field) {
-        output = make_tuple(functionName, name, field);
+    void addTrueOutput(const NIdentifier &output) {
+        this->output = output;
     }
 
-    const FullVariableName getTrueOutput() const {
+    const NIdentifier getTrueOutput() const {
         return output;
     }
 
@@ -77,14 +77,14 @@ class SatStaticAnalyzer : public StaticAnalyzer {
 
     string currentFunctionName;
 
-    unsigned int getIdentifierVariables(const FullVariableName &nIdentifier);
-    unsigned int addNewVariable(const FullVariableName &nIdentifier);
+    unsigned int getIdentifierVariables(const NIdentifier &nIdentifier);
+    unsigned int addNewVariable(const NIdentifier &nIdentifier);
 public:
     SatStaticAnalyzer() : numOfBitsPerInt(2), solver(new SATSolver), variables(), functions(), correspondences(), currentFunctionName() {}
 
-    void addClauses(const FullVariableName &lhs, const NInteger &nInteger);
-    void addClauses(const FullVariableName &lhs, const NBinaryOperator &nBinaryOperator);
-    void addClauses(const FullVariableName &lhs, const NIdentifier &nIdentifier);
+    void addClauses(const NIdentifier &lhs, const NInteger &nInteger);
+    void addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator);
+    void addClauses(const NIdentifier &lhs, const NIdentifier &nIdentifier);
 
     const string fullNameToSting(const FullVariableName &lhs) {
         if (get<2>(lhs) != "") {
@@ -94,7 +94,11 @@ public:
         }
     }
 
-    void mapMethodCall(const NMethodCall &methodCall, const FullVariableName &output);
+    const FullVariableName NIdentifierToFullName(const NIdentifier &lhs) {
+        return make_tuple(currentFunctionName, lhs.name, lhs.field);
+    }
+
+    void mapMethodCall(const NMethodCall &methodCall, const NIdentifier &output);
 
     void addInputs(const VariableList &inputs, const NIdentifier &functionName);
 
@@ -125,5 +129,5 @@ public:
 
     void addTrueOutput(const NIdentifier &variableName);
 
-    bool isConstant(int &returnValue, const FullVariableName &nIdentifier);
+    bool isConstant(int &returnValue, const NIdentifier &nIdentifier);
 };

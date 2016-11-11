@@ -32,7 +32,7 @@ public:
         throw functionIsNotImplemented("genCheck", name());
     }
 
-    virtual void addClauses(FullVariableName& nIdentifier, SatStaticAnalyzer& context) {
+    virtual void addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &context) {
         throw functionIsNotImplemented("addClauses", name());
     }
 };
@@ -58,7 +58,7 @@ public:
     int value;
     NInteger(int value) : value(value) { }
 
-    virtual void addClauses(FullVariableName& nIdentifier, SatStaticAnalyzer& context);
+    virtual void addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &context);
 
     virtual unique_ptr<LanguageType> mapVariables(const string &functionName, const string &inputName,
                                                   SatStaticAnalyzer &context);
@@ -68,10 +68,12 @@ class NIdentifier : public NExpression {
 public:
     std::string name;
     std::string field;
-    NIdentifier(const std::string& name) : name(name) { }
-    NIdentifier(const std::string& name, const std::string& field) : name(name), field(field) { }
+    int lineNumber;
+    NIdentifier(const std::string& name, int lineNumber) : name(name), lineNumber(lineNumber) { }
+    NIdentifier(const std::string& name, const std::string& field, int lineNumber) :
+            name(name), field(field), lineNumber(lineNumber) { }
 
-    virtual void addClauses(FullVariableName& nIdentifier, SatStaticAnalyzer& context);
+    virtual void addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &context);
 
     std::string printName() const {
         if(field != "")
@@ -88,13 +90,12 @@ class NMethodCall : public NExpression {
 public:
     const NIdentifier& id;
     ExpressionList arguments;
-    int lineNumber;
-    NMethodCall(const NIdentifier& id, ExpressionList& arguments, int lineNumber) :
-            id(id), arguments(arguments), lineNumber(lineNumber) { }
+    NMethodCall(const NIdentifier& id, ExpressionList& arguments) :
+            id(id), arguments(arguments) { }
 
     virtual void genCheck(SatStaticAnalyzer& context) const;
 
-    virtual void addClauses(FullVariableName& nIdentifier, SatStaticAnalyzer& context);
+    virtual void addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &context);
 };
 
 class NBinaryOperator : public NExpression {
@@ -102,11 +103,10 @@ public:
     bool op;
     NIdentifier& lhs;
     NIdentifier& rhs;
-    int lineNumber;
-    NBinaryOperator(NIdentifier& lhs, int op, NIdentifier& rhs, int lineNumber) :
-            lhs(lhs), rhs(rhs), op(op), lineNumber(lineNumber) { }
+    NBinaryOperator(NIdentifier& lhs, int op, NIdentifier& rhs) :
+            lhs(lhs), rhs(rhs), op(op) { }
 
-    virtual void addClauses(FullVariableName& nIdentifier, SatStaticAnalyzer& context);
+    virtual void addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &context);
 };
 
 class NAssignment : public NExpression {
