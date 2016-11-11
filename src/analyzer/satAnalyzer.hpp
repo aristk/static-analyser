@@ -3,8 +3,6 @@
 #include <vector>
 #include <map>
 
-#include "transition.hpp"
-
 class NBlock;
 using namespace CMSat;
 
@@ -16,7 +14,6 @@ class SatFunctionDeclaration {
     vector<string> inputs;
     vector<FullVariableName> outputStructs;
     FullVariableName output;
-    vector<std::unique_ptr<Transition> > transitions;
 public:
     SatFunctionDeclaration(): inputs(), outputStructs(), output() {}
 
@@ -26,10 +23,6 @@ public:
         }
         inputsMap.emplace(input);
         inputs.push_back(input);
-    }
-
-    void addTransition(std::unique_ptr<Transition> transition) {
-        transitions.push_back(move(transition));
     }
 
     bool isInput(const string & name) const {
@@ -83,10 +76,6 @@ public:
     void addClauses(const FullVariableName &lhs, const NInteger &nInteger);
     void addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator);
     void addClauses(const FullVariableName &lhs, const NIdentifier &nIdentifier);
-
-    void addTransition(std::unique_ptr<Transition> transition) {
-        functions[currentFunctionName]->addTransition(move(transition));
-    }
 
     void mapMethodCall(const NMethodCall &methodCall, const FullVariableName &output);
 

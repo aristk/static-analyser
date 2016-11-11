@@ -37,11 +37,6 @@ SatStaticAnalyzer::getIdentifierVariables(const FullVariableName &key) {
 
 void SatStaticAnalyzer::addClauses(const FullVariableName &lhs, const NIdentifier &nIdentifier) {
 
-    localVariableName VTLhs = make_pair(get<1>(lhs), get<2>(lhs));
-    localVariableName VTRhs = make_pair(nIdentifier.name, nIdentifier.field);
-    unique_ptr<Transition> transition(new VariableTransition(VTLhs, VTRhs));
-    addTransition(move(transition));
-
     const int variableCount = 2;
     vector<unsigned int> nVars(variableCount);
     nVars[0] = getIdentifierVariables(lhs);
@@ -59,10 +54,6 @@ void SatStaticAnalyzer::addClauses(const FullVariableName &lhs, const NIdentifie
 
 void SatStaticAnalyzer::addClauses(const FullVariableName &key, const NInteger &nInteger) {
     int value = nInteger.value;
-    localVariableName lhs = make_pair(get<1>(key), get<2>(key));
-    unique_ptr<IntegerTransition> transition(new IntegerTransition(lhs, value));
-    addTransition(move(transition));
-
 
     unsigned int nVars = addNewVariable(key);
     vector<Lit> clause(1);
@@ -76,13 +67,6 @@ void SatStaticAnalyzer::addClauses(const FullVariableName &key, const NInteger &
 
 // TODO: required automatic tests
 void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NBinaryOperator &nBinaryOperator) {
-    localVariableName lhs = make_pair(nIdentifier.name, nIdentifier.name);
-    localVariableName rhs1 = make_pair(nBinaryOperator.lhs.name, nBinaryOperator.lhs.field);
-    localVariableName rhs2 = make_pair(nBinaryOperator.rhs.name, nBinaryOperator.rhs.field);
-
-    unique_ptr<Transition> transition(new EquationTransition(lhs, rhs1, rhs2, nBinaryOperator.op));
-    addTransition(move(transition));
-
     const int variableCount = 3;
     vector<unsigned int> nVars(variableCount+1);
 
@@ -233,6 +217,9 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const FullV
     // TODO: since we cannot remove variables and clauses, we need to store transitions separately, to allow fast
     // manipulations with function calls: add/remove mapping between inputs/outputs. We will be forced to delete and
     // create new instances of the solver to avoid those problems
+
+    // TODO: important open question: is how to handle multiple function calls without inlining?
+
     // map outputs
     for (auto i: calledFunction->getOutputs()) {
         const string currentIdentifierName = correspondences[get<1>(i)];
