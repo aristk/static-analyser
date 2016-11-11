@@ -125,11 +125,12 @@ public:
         return functions.at(name).get();
     }
 
-    void mapToInputCall(const NIdentifier &nIdentifier);
+    NExpression * mapToInput(const NIdentifier &nIdentifier);
 
     void addOutput(const NIdentifier &variableName);
 
     void addTrueOutput(const NIdentifier &variableName);
 
     bool isConstant(int &returnValue, const NIdentifier &nIdentifier);
+
 };

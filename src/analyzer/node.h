@@ -23,6 +23,9 @@ typedef tuple<string, string, string> FullVariableName;
 
 class Node {
 public:
+    virtual int getTypeId() const {
+        return 0;
+    }
     virtual ~Node() {}
 
     std::string name() const { return typeid(*this).name(); }
@@ -32,7 +35,7 @@ public:
         throw functionIsNotImplemented("genCheck", name());
     }
 
-    virtual void addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &context) {
+    virtual void addClauses(const NIdentifier &nIdentifier, SatStaticAnalyzer &context) const {
         throw functionIsNotImplemented("addClauses", name());
     }
 };
@@ -52,8 +55,11 @@ public:
     int value;
     NInteger(int value) : value(value) { }
 
-    virtual void addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &context);
+    virtual void addClauses(const NIdentifier &nIdentifier, SatStaticAnalyzer &context) const;
 
+    virtual int getTypeId() const {
+        return 1;
+    }
 };
 
 class NIdentifier : public NExpression {
@@ -65,7 +71,7 @@ public:
     NIdentifier(const std::string& name, const std::string& field, int lineNumber) :
             name(name), field(field), lineNumber(lineNumber) { }
 
-    virtual void addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &context);
+    virtual void addClauses(const NIdentifier &nIdentifier, SatStaticAnalyzer &context) const;
 
     std::string printName() const {
         if(field != "")
@@ -73,7 +79,9 @@ public:
         else
             return name;
     }
-
+    virtual int getTypeId() const {
+        return 2;
+    }
 };
 
 class NMethodCall : public NExpression {
@@ -85,7 +93,7 @@ public:
 
     virtual void genCheck(SatStaticAnalyzer& context) const;
 
-    virtual void addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &context);
+    virtual void addClauses(const NIdentifier &nIdentifier, SatStaticAnalyzer &context) const;
 };
 
 class NBinaryOperator : public NExpression {
@@ -96,7 +104,7 @@ public:
     NBinaryOperator(NIdentifier& lhs, int op, NIdentifier& rhs) :
             lhs(lhs), rhs(rhs), op(op) { }
 
-    virtual void addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &context);
+    virtual void addClauses(const NIdentifier &nIdentifier, SatStaticAnalyzer &context) const;
 };
 
 class NAssignment : public NExpression {

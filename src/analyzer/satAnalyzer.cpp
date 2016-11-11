@@ -12,6 +12,7 @@ void SatStaticAnalyzer::generateCheck(const NBlock &root) {
 }
 
 unsigned int SatStaticAnalyzer::addNewVariable(const NIdentifier &nIdentifier) {
+
     unsigned int nVars = solver->nVars();
 
     FullVariableName key = NIdentifierToFullName(nIdentifier);
@@ -130,6 +131,10 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator
 bool
 SatStaticAnalyzer::isConstant(int &returnValue, const NIdentifier &key) {
 
+    // do not check for inlined functions
+    if (!correspondences.empty())
+        return false;
+
     const unsigned int lowerBitVariable = getIdentifierVariables(key);
 
     solver->solve();
@@ -201,6 +206,7 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
     // if inside call function a struct is used and it is defined in current function, mapping should be done
     for(int i = 0; i < methodCall.arguments.size(); i++) {
         correspondences.emplace(originalInputs[i], methodCall.arguments[i]);
+        // TODO: check that number of inputs is the same
     }
 
     // TODO: since we cannot remove variables and clauses, we need to store transitions separately, to allow fast
@@ -223,8 +229,15 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
 
     int returnValue;
     if (isConstant(returnValue, output)) {
-        cout << output.printName() << " from func is " << returnValue <<
+        cout << output.printName() << " from func \"" << calledFunctionName << "\" is " << returnValue <<
              " at line " << output.lineNumber << endl;
     }
+}
+
+NExpression * SatStaticAnalyzer::mapToInput(const NIdentifier &nIdentifier) {
+    if (!correspondences.empty() && (correspondences.count(nIdentifier.name) > 0)) {
+        return correspondences[nIdentifier.name];
+    }
+    return nullptr;
 }
 
