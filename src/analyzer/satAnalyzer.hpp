@@ -6,16 +6,15 @@
 class NBlock;
 using namespace CMSat;
 
-typedef tuple<string, string, string> FullVariableName;
-
 class SatFunctionDeclaration {
     // std::unordered_set allow fast check that string is an input
     unordered_set<string> inputsMap;
     vector<string> inputs;
     vector<FullVariableName> outputStructs;
     FullVariableName output;
+    unique_ptr<NBlock> body;
 public:
-    SatFunctionDeclaration(): inputs(), outputStructs(), output() {}
+    SatFunctionDeclaration(): inputs(), outputStructs(), output(), body() {}
 
     void addInput(const string &input) {
         if (isInput(input)) {
@@ -23,6 +22,14 @@ public:
         }
         inputsMap.emplace(input);
         inputs.push_back(input);
+    }
+
+    void addBody(NBlock *FunctionBody) {
+        body = move(unique_ptr<NBlock>(FunctionBody));
+    }
+
+    NBlock *getBody() {
+        return body.get();
     }
 
     bool isInput(const string & name) const {
@@ -66,20 +73,34 @@ class SatStaticAnalyzer : public StaticAnalyzer {
 
     map<string, std::unique_ptr<SatFunctionDeclaration> > functions;
 
+    map<string, unique_ptr<LanguageType> > correspondences;
+
     string currentFunctionName;
 
     unsigned int getIdentifierVariables(const FullVariableName &nIdentifier);
     unsigned int addNewVariable(const FullVariableName &nIdentifier);
 public:
-    SatStaticAnalyzer() : numOfBitsPerInt(2), solver(new SATSolver), variables(), functions(), currentFunctionName() {}
+    SatStaticAnalyzer() : numOfBitsPerInt(2), solver(new SATSolver), variables(), functions(), correspondences(), currentFunctionName() {}
 
     void addClauses(const FullVariableName &lhs, const NInteger &nInteger);
-    void addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator);
+    void addClauses(const FullVariableName &lhs, const NBinaryOperator &nBinaryOperator);
     void addClauses(const FullVariableName &lhs, const NIdentifier &nIdentifier);
+
+    const string fullNameToSting(const FullVariableName &lhs) {
+        if (get<2>(lhs) != "") {
+            return get<1>(lhs) + "." + get<2>(lhs);
+        } else {
+            return get<1>(lhs);
+        }
+    }
 
     void mapMethodCall(const NMethodCall &methodCall, const FullVariableName &output);
 
     void addInputs(const VariableList &inputs, const NIdentifier &functionName);
+
+    void addBody(NBlock *block, const string &functionName) {
+        functions[functionName]->addBody(block);
+    }
 
     void generateCheck(const NBlock& root);
 
@@ -104,5 +125,5 @@ public:
 
     void addTrueOutput(const NIdentifier &variableName);
 
-    bool isConstant(int &returnValue, const NIdentifier &nIdentifier);
+    bool isConstant(int &returnValue, const FullVariableName &nIdentifier);
 };

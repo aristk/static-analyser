@@ -1,11 +1,13 @@
 #include <iostream>
 #include <vector>
 #include <typeinfo>
+#include <map>
 
 #ifndef _NODE_H_
 #define _NODE_H_
 
-#include "analyzer/exceptions.hpp"
+#include "exceptions.hpp"
+#include "types.hpp"
 
 class SatStaticAnalyzer;
 class NStatement;
@@ -17,6 +19,7 @@ class NIdentifier;
 typedef std::vector<NStatement*> StatementList;
 typedef std::vector<NExpression*> ExpressionList;
 typedef std::vector<NIdentifier*> VariableList;
+typedef tuple<string, string, string> FullVariableName;
 
 class Node {
 public:
@@ -24,20 +27,20 @@ public:
 
     std::string name() const { return typeid(*this).name(); }
 
-    virtual void genCheck(SatStaticAnalyzer& context) const {
+    virtual void genCheck(SatStaticAnalyzer &context) const {
         // TODO: bad practice, should be caught during compilation
         throw functionIsNotImplemented("genCheck", name());
     }
 
-    virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context) {
+    virtual void addClauses(FullVariableName& nIdentifier, SatStaticAnalyzer& context) {
         throw functionIsNotImplemented("addClauses", name());
     }
 };
 
 class NExpression : public Node {
 public:
-    virtual pair<string, string> mapVariables(const string &functionName, const string &inputName,
-                                              SatStaticAnalyzer &context) {
+    virtual unique_ptr<LanguageType> mapVariables(const string &functionName, const string &inputName,
+                                                  SatStaticAnalyzer &context) {
         // TODO: throw that only int and variables allowed here
         throw functionIsNotImplemented("mapVariables", name());
     }
@@ -55,10 +58,10 @@ public:
     int value;
     NInteger(int value) : value(value) { }
 
-    virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context);
+    virtual void addClauses(FullVariableName& nIdentifier, SatStaticAnalyzer& context);
 
-    virtual pair<string, string> mapVariables(const string &functionName, const string &inputName,
-                                              SatStaticAnalyzer &context);
+    virtual unique_ptr<LanguageType> mapVariables(const string &functionName, const string &inputName,
+                                                  SatStaticAnalyzer &context);
 };
 
 class NIdentifier : public NExpression {
@@ -68,7 +71,7 @@ public:
     NIdentifier(const std::string& name) : name(name) { }
     NIdentifier(const std::string& name, const std::string& field) : name(name), field(field) { }
 
-    virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context);
+    virtual void addClauses(FullVariableName& nIdentifier, SatStaticAnalyzer& context);
 
     std::string printName() const {
         if(field != "")
@@ -77,8 +80,8 @@ public:
             return name;
     }
 
-    virtual pair<string, string> mapVariables(const string &functionName, const string &inputName,
-                                              SatStaticAnalyzer &context);
+    virtual unique_ptr<LanguageType> mapVariables(const string &functionName, const string &inputName,
+                                                  SatStaticAnalyzer &context);
 };
 
 class NMethodCall : public NExpression {
@@ -91,7 +94,7 @@ public:
 
     virtual void genCheck(SatStaticAnalyzer& context) const;
 
-    virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context);
+    virtual void addClauses(FullVariableName& nIdentifier, SatStaticAnalyzer& context);
 };
 
 class NBinaryOperator : public NExpression {
@@ -103,7 +106,7 @@ public:
     NBinaryOperator(NIdentifier& lhs, int op, NIdentifier& rhs, int lineNumber) :
             lhs(lhs), rhs(rhs), op(op), lineNumber(lineNumber) { }
 
-    virtual void addClauses(NIdentifier& nIdentifier, SatStaticAnalyzer& context);
+    virtual void addClauses(FullVariableName& nIdentifier, SatStaticAnalyzer& context);
 };
 
 class NAssignment : public NExpression {
@@ -120,7 +123,7 @@ public:
     StatementList statements;
     NBlock() { }
 
-    virtual void genCheck(SatStaticAnalyzer& context) const;
+    virtual void genCheck(SatStaticAnalyzer &context) const;
 };
 
 class NExpressionStatement : public NStatement {
@@ -146,7 +149,7 @@ public:
 class NVariableDeclaration : public NStatement {
 public:
     NIdentifier& id;
-    NExpression *assignmentExpr;
+    unique_ptr<NExpression> assignmentExpr;
     NVariableDeclaration(NIdentifier& id) :
             id(id) { }
     NVariableDeclaration(NIdentifier& id, NExpression *assignmentExpr) :

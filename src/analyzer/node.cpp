@@ -1,7 +1,7 @@
 #include "analyzer/node.h"
 #include "satAnalyzer.hpp"
 
-void NBlock::genCheck(SatStaticAnalyzer& context) const {
+void NBlock::genCheck(SatStaticAnalyzer &context) const {
     for(auto i : statements) {
         if (i->isFunctionDeclaration()) {
             // TODO: add to the parser check that NFunctionDeclaration could not be here
@@ -15,6 +15,8 @@ void NFunctionDeclaration::genCheck(SatStaticAnalyzer &context) const {
     // process inputs
     context.addInputs(arguments, id);
 
+    context.addBody(&block, id.name);
+
     // process body
     block.genCheck(context);
 }
@@ -25,7 +27,8 @@ void NVariableDeclaration::genCheck(SatStaticAnalyzer &context) const {
         context.addOutput(id);
     }
 
-    assignmentExpr->addClauses(id, context);
+    FullVariableName key = make_tuple(context.getCurrentFunctionName(), id.name, id.field);
+    assignmentExpr->addClauses(key, context);
 }
 
 void NReturnStatement::genCheck(SatStaticAnalyzer &context) const {
@@ -37,36 +40,32 @@ void NMethodCall::genCheck(SatStaticAnalyzer &context) const {
     context.mapMethodCall(*this, key);
 }
 
-void NMethodCall::addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &context) {
-    FullVariableName key = make_tuple(context.getCurrentFunctionName(), nIdentifier.name, nIdentifier.field);
+void NMethodCall::addClauses(FullVariableName &key, SatStaticAnalyzer &context) {
     context.mapMethodCall(*this, key);
 }
 
 //TODO: somehow merge into one call
-void NInteger::addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &context) {
-    FullVariableName key = make_tuple(context.getCurrentFunctionName(), nIdentifier.name, nIdentifier.field);
+// key = this
+void NInteger::addClauses(FullVariableName &key, SatStaticAnalyzer &context) {
     context.addClauses(key, *this);
 }
 
-void NBinaryOperator::addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &context) {
-    context.addClauses(nIdentifier, *this);
-}
-
-void NIdentifier::addClauses(NIdentifier &nIdentifier, SatStaticAnalyzer &context) {
-    FullVariableName key = make_tuple(context.getCurrentFunctionName(), nIdentifier.name, nIdentifier.field);
+// key = this
+void NBinaryOperator::addClauses(FullVariableName &key, SatStaticAnalyzer &context) {
     context.addClauses(key, *this);
 }
 
-pair<string, string> NIdentifier::mapVariables(const string &functionName, const string &inputName,
-                                               SatStaticAnalyzer &context) {
-    FullVariableName key = make_tuple(functionName, inputName, "");
+// key = this
+void NIdentifier::addClauses(FullVariableName &key, SatStaticAnalyzer &context) {
     context.addClauses(key, *this);
-    return make_pair(inputName, name);
 }
 
-pair<string, string> NInteger::mapVariables(const string &functionName, const string &inputName,
-                                            SatStaticAnalyzer &context) {
-    FullVariableName key = make_tuple(functionName, inputName, "");
-    context.addClauses(key, *this);
-    return make_pair(inputName, "");
+unique_ptr<LanguageType> NIdentifier::mapVariables(const string &functionName, const string &inputName,
+                                                   SatStaticAnalyzer &context) {
+    return unique_ptr<LanguageType>(new VariableType(name, field));
+}
+
+unique_ptr<LanguageType> NInteger::mapVariables(const string &functionName, const string &inputName,
+                                                SatStaticAnalyzer &context) {
+    return unique_ptr<LanguageType>(new IntegerType(value));
 }

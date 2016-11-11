@@ -66,7 +66,7 @@ void SatStaticAnalyzer::addClauses(const FullVariableName &key, const NInteger &
 }
 
 // TODO: required automatic tests
-void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NBinaryOperator &nBinaryOperator) {
+void SatStaticAnalyzer::addClauses(const FullVariableName &key, const NBinaryOperator &nBinaryOperator) {
     const int variableCount = 3;
     vector<unsigned int> nVars(variableCount+1);
 
@@ -79,7 +79,6 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NBinary
 
     // add new variables to handle output of NBinaryOperator
     unsigned int newVarLast = solver->nVars();
-    FullVariableName key = make_tuple(getCurrentFunctionName(), nIdentifier.name, nIdentifier.field);
     nVars[3] = addNewVariable(key);
 
     vector<unsigned int> clause(variableCount);
@@ -122,16 +121,15 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &nIdentifier, const NBinary
 
     // TODO: good option here is to introduce a class with undef and int values of return
     int returnValue;
-    if (isConstant(returnValue, nIdentifier)) {
-        cout << nIdentifier.printName() << " from BinaryOperator has constant value " << returnValue <<
+    if (isConstant(returnValue, key)) {
+        cout << fullNameToSting(key) << " from binOp is " << returnValue <<
              " at line " << nBinaryOperator.lineNumber << endl;
     }
 }
 
 bool
-SatStaticAnalyzer::isConstant(int &returnValue, const NIdentifier &nIdentifier) {
+SatStaticAnalyzer::isConstant(int &returnValue, const FullVariableName &key) {
 
-    FullVariableName key = make_tuple(currentFunctionName, nIdentifier.name, nIdentifier.field);
     const unsigned int lowerBitVariable = getIdentifierVariables(key);
 
     solver->solve();
@@ -203,15 +201,14 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const FullV
     SatFunctionDeclaration *calledFunction = getFunction(calledFunctionName);
 
     vector<string> originalInputs = calledFunction->getInputs();
-    map<string, string> correspondences;
 
     // map inputs
     // TODO: should be something more complicated here:
     // if inside call function a struct is used and it is defined in current function, mapping should be done
     for(int i = 0; i < methodCall.arguments.size(); i++) {
-        pair<string, string> correspondence =
+        unique_ptr<LanguageType> correspondence =
                 methodCall.arguments[i]->mapVariables(calledFunctionName, originalInputs[i], *this);
-        correspondences.emplace(correspondence);
+        correspondences.emplace(originalInputs[i], move(correspondence));
     }
 
     // TODO: since we cannot remove variables and clauses, we need to store transitions separately, to allow fast
@@ -220,15 +217,11 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const FullV
 
     // TODO: important open question: is how to handle multiple function calls without inlining?
 
-    // map outputs
-    for (auto i: calledFunction->getOutputs()) {
-        const string currentIdentifierName = correspondences[get<1>(i)];
-        if (currentIdentifierName == "") {
-            throw InputIsAStruct();
-        }
-        NIdentifier nIdentifier(currentIdentifierName, get<2>(i));
-        addClauses(i, nIdentifier);
-    }
+    // inline function body
+    calledFunction->getBody()->genCheck(*this);
+
+    correspondences.clear();
+
 
     // map true output
     NIdentifier nIdentifier(get<1>(output), get<2>(output));
@@ -237,8 +230,8 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const FullV
     }
 
     int returnValue;
-    if (isConstant(returnValue, nIdentifier)) {
-        cout << nIdentifier.printName() << " from MethodCall has constant value " << returnValue <<
+    if (isConstant(returnValue, output)) {
+        cout << fullNameToSting(output) << " from func is " << returnValue <<
              " at line " << methodCall.lineNumber << endl;
     }
 }
