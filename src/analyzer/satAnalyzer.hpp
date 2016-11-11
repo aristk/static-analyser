@@ -73,7 +73,7 @@ class SatStaticAnalyzer : public StaticAnalyzer {
 
     map<string, std::unique_ptr<SatFunctionDeclaration> > functions;
 
-    map<string, unique_ptr<LanguageType> > correspondences;
+    map<string, NExpression* > correspondences;
 
     string currentFunctionName;
 
@@ -84,7 +84,7 @@ public:
 
     void addClauses(const NIdentifier &lhs, const NInteger &nInteger);
     void addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator);
-    void addClauses(const NIdentifier &lhs, const NIdentifier &nIdentifier);
+    void addClauses(const NIdentifier &lhs, const NIdentifier &rhs);
 
     const string fullNameToSting(const FullVariableName &lhs) {
         if (get<2>(lhs) != "") {
@@ -124,6 +124,8 @@ public:
         }
         return functions.at(name).get();
     }
+
+    void mapToInputCall(const NIdentifier &nIdentifier);
 
     void addOutput(const NIdentifier &variableName);
 

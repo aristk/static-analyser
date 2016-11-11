@@ -38,12 +38,12 @@ SatStaticAnalyzer::getIdentifierVariables(const NIdentifier &nIdentifier) {
     return variables[key];
 }
 
-void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &nIdentifier) {
+void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rhs) {
 
     const int variableCount = 2;
     vector<unsigned int> nVars(variableCount);
     nVars[0] = getIdentifierVariables(lhs);
-    nVars[1] = getIdentifierVariables(nIdentifier);
+    nVars[1] = getIdentifierVariables(rhs);
     vector<unsigned int> clause(variableCount);
 
     for (int i = 0; i < numOfBitsPerInt; i++) {
@@ -68,7 +68,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &key, const NInteger &nInte
 }
 
 // TODO: required automatic tests
-void SatStaticAnalyzer::addClauses(const NIdentifier &key, const NBinaryOperator &nBinaryOperator) {
+void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator) {
     const int variableCount = 3;
     vector<unsigned int> nVars(variableCount+1);
 
@@ -79,7 +79,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &key, const NBinaryOperator
 
     // add new variables to handle output of NBinaryOperator
     unsigned int newVarLast = solver->nVars();
-    nVars[3] = addNewVariable(key);
+    nVars[3] = addNewVariable(lhs);
 
     vector<unsigned int> clause(variableCount);
     vector<Lit> binClause(2);
@@ -121,9 +121,9 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &key, const NBinaryOperator
 
     // TODO: good option here is to introduce a class with undef and int values of return
     int returnValue;
-    if (isConstant(returnValue, key)) {
-        cout << key.printName() << " from binOp is " << returnValue <<
-             " at line " << key.lineNumber << endl;
+    if (isConstant(returnValue, lhs)) {
+        cout << lhs.printName() << " from binOp is " << returnValue <<
+             " at line " << lhs.lineNumber << endl;
     }
 }
 
@@ -148,11 +148,8 @@ SatStaticAnalyzer::isConstant(int &returnValue, const NIdentifier &key) {
         }
     }
 
-    if (countEqualBits == numOfBitsPerInt) {
-        return true;
-    }
+    return countEqualBits == numOfBitsPerInt;
 
-    return false;
 }
 
 void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier &functionName) {
@@ -189,10 +186,7 @@ void SatStaticAnalyzer::addTrueOutput(const NIdentifier &variableName){
 bool SatStaticAnalyzer::isCurrentInput(const NIdentifier &nIdentifier) {
     SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
 
-    if (currentFunction->isInput(nIdentifier.name)) {
-        return true;
-    }
-    return false;
+    return currentFunction->isInput(nIdentifier.name);
 }
 
 void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIdentifier &output) {
@@ -206,9 +200,7 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
     // TODO: should be something more complicated here:
     // if inside call function a struct is used and it is defined in current function, mapping should be done
     for(int i = 0; i < methodCall.arguments.size(); i++) {
-        unique_ptr<LanguageType> correspondence =
-                methodCall.arguments[i]->mapVariables(calledFunctionName, originalInputs[i], *this);
-        correspondences.emplace(originalInputs[i], move(correspondence));
+        correspondences.emplace(originalInputs[i], methodCall.arguments[i]);
     }
 
     // TODO: since we cannot remove variables and clauses, we need to store transitions separately, to allow fast
@@ -217,6 +209,7 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
 
     // TODO: important open question: is how to handle multiple function calls without inlining?
 
+    // distinguish normal function and called function with integer at beginning
     // inline function body
     calledFunction->getBody()->genCheck(*this);
 

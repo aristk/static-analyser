@@ -59,12 +59,3 @@ void NIdentifier::addClauses(NIdentifier &key, SatStaticAnalyzer &context) {
     context.addClauses(key, *this);
 }
 
-unique_ptr<LanguageType> NIdentifier::mapVariables(const string &functionName, const string &inputName,
-                                                   SatStaticAnalyzer &context) {
-    return unique_ptr<LanguageType>(new VariableType(name, field));
-}
-
-unique_ptr<LanguageType> NInteger::mapVariables(const string &functionName, const string &inputName,
-                                                SatStaticAnalyzer &context) {
-    return unique_ptr<LanguageType>(new IntegerType(value));
-}
