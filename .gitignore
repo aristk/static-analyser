@@ -1,4 +1,11 @@
+### Microsoft Z3 ###
+
+.z3-trace
+
+
 # Created by https://www.gitignore.io/api/jetbrains
+
+###
 
 ### JetBrains ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm

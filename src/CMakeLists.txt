@@ -1,3 +1,4 @@
+project(staticAnalyzer)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -38,4 +39,11 @@ include_directories(${CMAKE_SOURCE_DIR}/cryptominisat-5.0.1/src)
 set(SOURCE_FILES analyzer/satAnalyzer.cpp analyzer/node.cpp core.cpp ${FlexOutput} ${BisonOutput})
 add_library(core ${SOURCE_FILES})
 add_executable(staticAnalyzer main.cpp)
-target_link_libraries(staticAnalyzer core libcryptominisat5)
+
+set(LIBS core libcryptominisat5)
+
+include_directories(${Z3_INCLUDE_DIR})
+set(LIBS ${LIBS} libz3)
+
+target_link_libraries(staticAnalyzer ${LIBS})
+
