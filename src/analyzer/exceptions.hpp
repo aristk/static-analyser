@@ -84,3 +84,8 @@ public:
             output("Variable \"" + input + "\" already defined as input") { }
 };
 
+class isWrongModel: public exception {
+    virtual const char* what() const throw() {
+        return "Model could not be unsat.";
+    }
+};

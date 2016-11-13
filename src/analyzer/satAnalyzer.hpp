@@ -15,8 +15,9 @@ class SatFunctionDeclaration {
     vector<FullVariableName> outputStructs;
     NIdentifier output;
     unique_ptr<NBlock> body;
+    map<string, int> variableOccurences;
 public:
-    SatFunctionDeclaration(): inputs(), outputStructs(), output("", "", 0), body() {}
+    SatFunctionDeclaration(): inputs(), outputStructs(), output("", "", 0), body(), variableOccurences() {}
 
     void addInput(const string &input) {
         if (isInput(input)) {
@@ -24,6 +25,35 @@ public:
         }
         inputsMap.emplace(input);
         inputs.push_back(input);
+    }
+
+    const unsigned int getOccurences(const string &variableName) const {
+        unsigned int answer = 0;
+        if (variableOccurences.count(variableName) > 0) {
+            answer = variableOccurences.at(variableName);
+        }
+        return answer;
+    }
+
+    void setOccurences(const string &variableName, unsigned int occurence) {
+        variableOccurences[variableName] = occurence;
+    }
+
+    const string makeUniqueName(const string &variableName, const int occurence) {
+        return to_string(occurence) + "_" + variableName;
+    }
+
+    const string incUniqueName(const string &variableName) {
+        unsigned int lhsOccurence = getOccurences(variableName) + 1;
+        string lhsName = makeUniqueName(variableName, lhsOccurence);
+        setOccurences(variableName, lhsOccurence);
+        return lhsName;
+    }
+
+    const string getUniqueName(const string &variableName) {
+        unsigned int lhsOccurence = getOccurences(variableName);
+        string lhsName = makeUniqueName(variableName, lhsOccurence);
+        return lhsName;
     }
 
     void addBody(NBlock *FunctionBody) {
@@ -87,14 +117,6 @@ public:
     virtual void addClauses(const NIdentifier &lhs, const NInteger &nInteger);
     virtual void addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator);
     virtual void addClauses(const NIdentifier &lhs, const NIdentifier &rhs);
-
-    const string fullNameToSting(const FullVariableName &lhs) {
-        if (get<2>(lhs) != "") {
-            return get<1>(lhs) + "." + get<2>(lhs);
-        } else {
-            return get<1>(lhs);
-        }
-    }
 
     const FullVariableName NIdentifierToFullName(const NIdentifier &lhs) {
         return make_tuple(currentFunctionName, lhs.name, lhs.field);

@@ -25,8 +25,8 @@ int core(int argc, char **argv)
     yyparse();
     fclose(file);
 
-    z3::context c;
-    unique_ptr<SatStaticAnalyzer> analyzer(new Z3SatStaticAnalyzer(c));
+//    z3::context c;
+    unique_ptr<SatStaticAnalyzer> analyzer(new SatStaticAnalyzer());
     try {
         analyzer->generateCheck(*programBlock);
     } catch (exception& e) {
