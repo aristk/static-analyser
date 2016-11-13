@@ -38,7 +38,7 @@ include_directories(${CMAKE_SOURCE_DIR}/cryptominisat-5.0.1/src)
 
 set(SOURCE_FILES analyzer/satAnalyzer.cpp analyzer/node.cpp core.cpp ${FlexOutput} ${BisonOutput})
 
-set(Z3_FOUND 1)
+set(Z3_FOUND 0)
 
 if (Z3_FOUND)
     include_directories(${Z3_SOURCE_DIR}/src/api)

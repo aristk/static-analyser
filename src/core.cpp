@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include "analyzer/node.h"
-#include "analyzer/smtAnalyzer.hpp"
+#include "analyzer/satAnalyzer.hpp"
 
 using namespace std;
 

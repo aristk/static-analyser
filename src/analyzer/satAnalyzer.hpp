@@ -15,9 +15,8 @@ class SatFunctionDeclaration {
     vector<FullVariableName> outputStructs;
     NIdentifier output;
     unique_ptr<NBlock> body;
-    map<string, int> variableOccurences;
 public:
-    SatFunctionDeclaration(): inputs(), outputStructs(), output("", "", 0), body(), variableOccurences() {}
+    SatFunctionDeclaration(): inputs(), outputStructs(), output("", "", 0), body() {}
 
     void addInput(const string &input) {
         if (isInput(input)) {
@@ -25,35 +24,6 @@ public:
         }
         inputsMap.emplace(input);
         inputs.push_back(input);
-    }
-
-    const unsigned int getOccurences(const string &variableName) const {
-        unsigned int answer = 0;
-        if (variableOccurences.count(variableName) > 0) {
-            answer = variableOccurences.at(variableName);
-        }
-        return answer;
-    }
-
-    void setOccurences(const string &variableName, unsigned int occurence) {
-        variableOccurences[variableName] = occurence;
-    }
-
-    const string makeUniqueName(const string &variableName, const int occurence) {
-        return to_string(occurence) + "_" + variableName;
-    }
-
-    const string incUniqueName(const string &variableName) {
-        unsigned int lhsOccurence = getOccurences(variableName) + 1;
-        string lhsName = makeUniqueName(variableName, lhsOccurence);
-        setOccurences(variableName, lhsOccurence);
-        return lhsName;
-    }
-
-    const string getUniqueName(const string &variableName) {
-        unsigned int lhsOccurence = getOccurences(variableName);
-        string lhsName = makeUniqueName(variableName, lhsOccurence);
-        return lhsName;
     }
 
     void addBody(NBlock *FunctionBody) {
@@ -69,7 +39,7 @@ public:
     }
 
     void addOutput(const string &functionName, const string &name, const string &field) {
-        outputStructs.push_back(make_tuple(functionName, name, field));
+        outputStructs.push_back(FullVariableName(functionName, name, field));
     }
 
     void addTrueOutput(const NIdentifier &output) {
@@ -78,10 +48,6 @@ public:
 
     const NIdentifier getTrueOutput() const {
         return output;
-    }
-
-    const vector<FullVariableName> getOutputs() const {
-        return outputStructs;
     }
 
     const vector<string> getInputs() const {
@@ -101,7 +67,8 @@ class SatStaticAnalyzer : public StaticAnalyzer {
     std::unique_ptr<SATSolver> solver;
 
     // relation of function, struct, field (NIdentifier) to Boolean variables
-    map<FullVariableName, unsigned int> variables;
+    map<FullVariableNameOccurrence, unsigned int> variables;
+    map<FullVariableName, unsigned int> variableOccurrences;
 
     map<string, std::unique_ptr<SatFunctionDeclaration> > functions;
 
@@ -118,8 +85,20 @@ public:
     virtual void addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator);
     virtual void addClauses(const NIdentifier &lhs, const NIdentifier &rhs);
 
+    const unsigned int getOccurrences(const FullVariableName &variableName) const {
+        unsigned int answer = 0;
+        if (variableOccurrences.count(variableName) > 0) {
+            answer = variableOccurrences.at(variableName);
+        }
+        return answer;
+    }
+
+    void setOccurrences(const FullVariableName &variableName, unsigned int occurence) {
+        variableOccurrences[variableName] = occurence;
+    }
+
     const FullVariableName NIdentifierToFullName(const NIdentifier &lhs) {
-        return make_tuple(currentFunctionName, lhs.name, lhs.field);
+        return FullVariableName(currentFunctionName, lhs.name, lhs.field);
     }
 
     void mapMethodCall(const NMethodCall &methodCall, const NIdentifier &output);
@@ -159,4 +138,5 @@ public:
 
     virtual ~SatStaticAnalyzer() {}
 
+    FullVariableNameOccurrence getFullVariableNameOccurrence(const NIdentifier &nIdentifier);
 };

@@ -7,6 +7,7 @@
 #define _NODE_H_
 
 #include "exceptions.hpp"
+#include "variableName.hpp"
 
 class SatStaticAnalyzer;
 class NStatement;
@@ -18,8 +19,6 @@ class NIdentifier;
 typedef std::vector<NStatement*> StatementList;
 typedef std::vector<NExpression*> ExpressionList;
 typedef std::vector<NIdentifier*> VariableList;
-// TODO: remove FullVariableName as not need
-typedef tuple<string, string, string> FullVariableName;
 
 class Node {
 public:

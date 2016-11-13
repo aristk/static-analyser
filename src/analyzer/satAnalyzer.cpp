@@ -15,13 +15,15 @@ unsigned int SatStaticAnalyzer::addNewVariable(const NIdentifier &nIdentifier) {
 
     unsigned int nVars = solver->nVars();
 
-    FullVariableName key = NIdentifierToFullName(nIdentifier);
+    FullVariableNameOccurrence key = getFullVariableNameOccurrence(nIdentifier);
 
     // in case of dummy variables, do not map them
     if (get<1>(key) != "") {
         if (variables.count(key) > 0) {
-            // TODO: all clauses with old variables should removed, current SAT solver interface could not do that
-            // so right now we just adding new variables and clauses
+            get<3>(key)++;
+            FullVariableName fullVariableName = NIdentifierToFullName(nIdentifier);
+            unsigned int occurrence = getOccurrences(fullVariableName);
+            setOccurrences(fullVariableName, occurrence+1);
         }
         variables[key] = nVars;
     }
@@ -29,9 +31,19 @@ unsigned int SatStaticAnalyzer::addNewVariable(const NIdentifier &nIdentifier) {
     return nVars;
 }
 
+FullVariableNameOccurrence SatStaticAnalyzer::getFullVariableNameOccurrence(const NIdentifier &nIdentifier) {
+    FullVariableName fullVariableName = NIdentifierToFullName(nIdentifier);
+
+    unsigned int occurrence = getOccurrences(fullVariableName);
+
+    FullVariableNameOccurrence key =
+            make_tuple(get<0>(fullVariableName), get<1>(fullVariableName), get<2>(fullVariableName), occurrence);
+    return key;
+}
+
 unsigned int
 SatStaticAnalyzer::getIdentifierVariables(const NIdentifier &nIdentifier) {
-    FullVariableName key = NIdentifierToFullName(nIdentifier);
+    FullVariableNameOccurrence key = getFullVariableNameOccurrence(nIdentifier);
     // if variables was not defined, define them
     if (variables.count(key) == 0) {
         addNewVariable(nIdentifier);
@@ -43,7 +55,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rh
 
     const int variableCount = 2;
     vector<unsigned int> nVars(variableCount);
-    nVars[0] = getIdentifierVariables(lhs);
+    nVars[0] = addNewVariable(lhs);
     nVars[1] = getIdentifierVariables(rhs);
     vector<unsigned int> clause(variableCount);
 
