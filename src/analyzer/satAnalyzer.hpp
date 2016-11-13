@@ -1,10 +1,12 @@
 #include "cryptominisat.h"
+#include "node.h"
 #include <unordered_set>
 #include <vector>
 #include <map>
 
 class NBlock;
 using namespace CMSat;
+using namespace std;
 
 class SatFunctionDeclaration {
     // std::unordered_set allow fast check that string is an input
@@ -82,9 +84,9 @@ class SatStaticAnalyzer : public StaticAnalyzer {
 public:
     SatStaticAnalyzer() : numOfBitsPerInt(2), solver(new SATSolver), variables(), functions(), correspondences(), currentFunctionName() {}
 
-    void addClauses(const NIdentifier &lhs, const NInteger &nInteger);
-    void addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator);
-    void addClauses(const NIdentifier &lhs, const NIdentifier &rhs);
+    virtual void addClauses(const NIdentifier &lhs, const NInteger &nInteger);
+    virtual void addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator);
+    virtual void addClauses(const NIdentifier &lhs, const NIdentifier &rhs);
 
     const string fullNameToSting(const FullVariableName &lhs) {
         if (get<2>(lhs) != "") {
@@ -131,6 +133,8 @@ public:
 
     void addTrueOutput(const NIdentifier &variableName);
 
-    bool isConstant(int &returnValue, const NIdentifier &nIdentifier);
+    virtual bool isConstant(int &returnValue, const NIdentifier &nIdentifier);
+
+    virtual ~SatStaticAnalyzer() {}
 
 };

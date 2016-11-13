@@ -4,10 +4,18 @@ project(staticAnalyzerRoot)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
-#set(CMAKE_MACOSX_RPATH 1)
+set(CMAKE_MACOSX_RPATH 1)
 
-# Custom cmake search
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
+message("CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+
+IF(CMAKE_BUILD_TYPE MATCHES Debug)
+    message("Debug build.")
+ELSEIF(CMAKE_BUILD_TYPE MATCHES Release)
+    message("Release build.")
+ELSE()
+    message("Some other build type.")
+ENDIF()
+
 
 add_subdirectory(src)
 add_subdirectory(tests)

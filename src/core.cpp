@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include "analyzer/node.h"
-#include "analyzer/satAnalyzer.hpp"
+#include "analyzer/smtAnalyzer.hpp"
 
 using namespace std;
 
@@ -25,9 +25,10 @@ int core(int argc, char **argv)
     yyparse();
     fclose(file);
 
-    SatStaticAnalyzer satAnalyzer;
+    z3::context c;
+    unique_ptr<SatStaticAnalyzer> analyzer(new Z3SatStaticAnalyzer(c));
     try {
-        satAnalyzer.generateCheck(*programBlock);
+        analyzer->generateCheck(*programBlock);
     } catch (exception& e) {
         cerr << "Exception caught:" << endl;
         cerr << e.what() << endl;
