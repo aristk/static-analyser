@@ -146,7 +146,7 @@ bool
 SatStaticAnalyzer::isConstant(int &returnValue, const NIdentifier &key) {
 
     // do not check for inlined functions
-    if (!correspondences.empty())
+    if (!callStack.empty())
         return false;
 
     const unsigned int lowerBitVariable = getIdentifierVariables(key);
@@ -228,21 +228,19 @@ bool SatStaticAnalyzer::isCurrentInput(const NIdentifier &nIdentifier) {
 void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIdentifier &output) {
 
     string calledFunctionName = methodCall.id.name;
+    callStack.push(calledFunctionName);
     SatFunctionDeclaration *calledFunction = getFunction(calledFunctionName);
 
     vector<string> originalInputs = calledFunction->getInputs();
 
     // map inputs
-    // TODO: should be something more complicated here:
-    // if inside call function a struct is used and it is defined in current function, mapping should be done
+    // TODO: should not be used
     for(int i = 0; i < methodCall.arguments.size(); i++) {
         correspondences.emplace(originalInputs[i], methodCall.arguments[i]);
         // TODO: check that number of inputs is the same
     }
 
-    // TODO: since we cannot remove variables and clauses, we need to store transitions separately, to allow fast
-    // manipulations with function calls: add/remove mapping between inputs/outputs. We will be forced to delete and
-    // create new instances of the solver to avoid those problems
+    // since we cannot remove variables and clauses, we need to store transitions separately (as new lhs variables)
 
     // TODO: important open question: is how to handle multiple function calls without inlining?
 
@@ -250,9 +248,12 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
     // inline function body
     calledFunction->getBody()->genCheck(*this);
 
+    // TODO: could be buggy here: it is more clear way to implement something like "call stack" with correspondences
     correspondences.clear();
 
     // cout << "checking function " <<  calledFunctionName << "()" << endl;
+
+    callStack.pop();
 
     // map and check true output
     if (output.name != "") {

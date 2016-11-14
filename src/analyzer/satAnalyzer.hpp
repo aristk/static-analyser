@@ -3,6 +3,7 @@
 #include <unordered_set>
 #include <vector>
 #include <map>
+#include <stack>
 
 class NBlock;
 using namespace CMSat;
@@ -70,6 +71,8 @@ class SatStaticAnalyzer : public StaticAnalyzer {
     map<FullVariableNameOccurrence, unsigned int> variables;
     map<FullVariableName, unsigned int> variableOccurrences;
 
+    stack<string> callStack;
+
     map<string, std::unique_ptr<SatFunctionDeclaration> > functions;
 
     map<string, NExpression* > correspondences;
@@ -79,7 +82,7 @@ class SatStaticAnalyzer : public StaticAnalyzer {
     unsigned int getIdentifierVariables(const NIdentifier &nIdentifier);
     unsigned int addNewVariable(const NIdentifier &nIdentifier);
 public:
-    SatStaticAnalyzer() : numOfBitsPerInt(2), solver(new SATSolver), variables(), functions(), correspondences(), currentFunctionName() {}
+    SatStaticAnalyzer() : numOfBitsPerInt(2), solver(new SATSolver), variables(), variableOccurrences(), callStack(), functions(), correspondences(), currentFunctionName() {}
 
     virtual void addClauses(const NIdentifier &lhs, const NInteger &nInteger);
     virtual void addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator);
