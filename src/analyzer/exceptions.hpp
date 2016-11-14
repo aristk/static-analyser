@@ -16,6 +16,15 @@ class NotNVariableDeclaration: public exception
     }
 };
 
+class isParserCrashed: public exception
+{
+public:
+    virtual const char* what() const throw()
+    {
+        return "Result of parsing is NULL.";
+    }
+};
+
 class WrongBinaryOperator: public exception {
     virtual const char* what() const throw()
     {

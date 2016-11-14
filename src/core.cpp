@@ -19,11 +19,16 @@ int core(int argc, char **argv)
     FILE* file = fopen(argv[1],"r");
     if(file == NULL) {
         printf("couldn’t open %s\n", argv[1]);
-        exit(0);
+        return 1;
     }
     yyin = file; // now flex reads from file
     yyparse();
     fclose(file);
+
+    if (programBlock == NULL) {
+        cout << isParserCrashed().what() << endl;
+        return 1;
+    }
 
 //    z3::context c;
     unique_ptr<SatStaticAnalyzer> analyzer(new SatStaticAnalyzer());
