@@ -156,7 +156,8 @@ SatStaticAnalyzer::isConstant(int &returnValue, const NIdentifier &key) {
     int countEqualBits = 0;
     returnValue = 0;
 
-    // TODO: assume that solver found all unit clauses (should be checked)
+    // small optimization: do not call solver for literals with values
+    vector<bool> skip(numOfBitsPerInt, 0);
     vector<Lit> unitLiterals = solver->get_zero_assigned_lits();
 
     for(auto i: unitLiterals) {
@@ -164,6 +165,22 @@ SatStaticAnalyzer::isConstant(int &returnValue, const NIdentifier &key) {
             int bitPosition = i.var() - lowerBitVariable;
             returnValue += (1 << bitPosition) * (1-i.sign());
             countEqualBits++;
+            skip[bitPosition] = 1;
+        }
+    }
+
+    // try not yet assigned values
+    vector<lbool> model = solver->get_model();
+    for(int i=0; i < numOfBitsPerInt; i++) {
+        if(!skip[i]) {
+            vector<Lit> assumption(1);
+            bool sign = model[lowerBitVariable + i] == l_True;
+            assumption[0] = Lit(lowerBitVariable + i, sign);
+            lbool ret = solver->solve(&assumption);
+            if (ret == l_False) {
+                returnValue += (1 << i) * (sign);
+                countEqualBits++;
+            }
         }
     }
 

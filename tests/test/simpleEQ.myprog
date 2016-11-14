@@ -2,4 +2,12 @@ func foo() {
 	i = x
 	j = x
 	k = i == j
+
+	i = y
+	j = y
+	k = i != j
+
+	i = x
+	j = y
+	k = i == j
 }
