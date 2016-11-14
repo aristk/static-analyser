@@ -20,6 +20,8 @@ unsigned int SatStaticAnalyzer::addNewVariable(const NIdentifier &nIdentifier) {
     // in case of dummy variables, do not map them
     if (get<1>(key) != "") {
         if (variables.count(key) > 0) {
+            // if variable that going to be assigned was used previously, then we need to create new 
+            // variable (previous incarnations of variable could be used, so we should not erase them)
             get<3>(key)++;
             FullVariableName fullVariableName = NIdentifierToFullName(nIdentifier);
             unsigned int occurrence = getOccurrences(fullVariableName);
@@ -48,7 +50,7 @@ SatStaticAnalyzer::getIdentifierVariables(const NIdentifier &nIdentifier) {
     if (variables.count(key) == 0) {
         addNewVariable(nIdentifier);
     }
-    return variables[key];
+    return variables.at(key);
 }
 
 void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rhs) {
@@ -233,16 +235,18 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
 
     correspondences.clear();
 
+    // cout << "checking function " <<  calledFunctionName << "()" << endl;
 
-    // map true output
+    // map and check true output
     if (output.name != "") {
-        addClauses(calledFunction->getTrueOutput(), output);
-    }
+        // map function output and new variable
+        addClauses(output, calledFunction->getTrueOutput());
 
-    int returnValue;
-    if (isConstant(returnValue, output)) {
-        cout << output.printName() << " from func \"" << calledFunctionName << "\" is " << returnValue <<
-             " at line " << output.lineNumber << endl;
+        int returnValue;
+        if (isConstant(returnValue, output)) {
+            cout << output.printName() << " from func \"" << calledFunctionName << "\" is " << returnValue <<
+                 " at line " << output.lineNumber << endl;
+        }
     }
 }
 
