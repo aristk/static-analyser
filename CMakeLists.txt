@@ -19,5 +19,5 @@ ENDIF()
 
 add_subdirectory(src)
 add_subdirectory(tests)
-add_subdirectory(cryptominisat-5.0.1)
+add_subdirectory(provers/cryptominisat-5.0.1)
 add_subdirectory(provers/z3-z3-4.5.0)
