@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <stack>
+#include <math.h>
 
 class NBlock;
 using namespace CMSat;
@@ -69,8 +70,8 @@ public:
 };
 
 class SatStaticAnalyzer : public StaticAnalyzer {
-    // how many bits we need per integer (depends on max int from parser)
-    const unsigned int numOfBitsPerInt;
+    // how many bits we need per integer (depends on int count from parser)
+    unsigned int numOfBitsPerInt;
 
     std::unique_ptr<SATSolver> solver;
 
@@ -91,8 +92,12 @@ class SatStaticAnalyzer : public StaticAnalyzer {
 
     vector<pair<int, unsigned int> > answers;
 public:
-    SatStaticAnalyzer() : numOfBitsPerInt(2), solver(new SATSolver), variables(), variableOccurrences(), callStack(),
-                          functions(), correspondences(), currentFunctionName(), answers() { }
+    SatStaticAnalyzer() : solver(new SATSolver), variables(), variableOccurrences(), callStack(),
+                          functions(), correspondences(), currentFunctionName(), answers() {
+        // we need at least one bit for boolean variable
+        numOfBitsPerInt = ceil(log2(max((unsigned int)
+        2, NInteger::differentIntCount)));
+    }
 
     virtual void addClauses(const NIdentifier &lhs, const NInteger &nInteger);
     virtual void addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator);

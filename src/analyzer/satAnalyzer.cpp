@@ -70,7 +70,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rh
 }
 
 void SatStaticAnalyzer::addClauses(const NIdentifier &key, const NInteger &nInteger) {
-    int value = nInteger.value;
+    int value = NInteger::intMapping[nInteger.value];
 
     unsigned int nVars = getLhsSatVar(key);
     vector<Lit> clause(1);

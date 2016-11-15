@@ -52,7 +52,14 @@ public:
 class NInteger : public NExpression {
 public:
     int value;
-    NInteger(int value) : value(value) { }
+    static map<int, unsigned int> intMapping;
+    static unsigned int differentIntCount;
+    NInteger(int value) : value(value) {
+        if (intMapping.count(value) == 0) {
+            intMapping[value] = differentIntCount;
+            differentIntCount++;
+        }
+    }
 
     virtual void addClauses(const NIdentifier &nIdentifier, SatStaticAnalyzer &context) const;
 

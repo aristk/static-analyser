@@ -1,6 +1,10 @@
 #include "analyzer/node.h"
 #include "satAnalyzer.hpp"
 
+
+map<int, unsigned int> NInteger::intMapping;
+unsigned int NInteger::differentIntCount = 0;
+
 void NBlock::genCheck(SatStaticAnalyzer &context) const {
     for(auto i : statements) {
         if (i->isFunctionDeclaration()) {
