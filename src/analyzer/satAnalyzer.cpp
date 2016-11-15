@@ -211,13 +211,6 @@ void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier 
     currentFunctionName = name;
 }
 
-// TODO: join into one function following two
-void SatStaticAnalyzer::addOutput(const NIdentifier &variableName) {
-    SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
-
-    currentFunction->addOutput(currentFunctionName, variableName.name, variableName.field);
-}
-
 void SatStaticAnalyzer::addTrueOutput(const NIdentifier &variableName){
     SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
 

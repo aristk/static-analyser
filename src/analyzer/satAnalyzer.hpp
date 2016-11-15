@@ -13,11 +13,10 @@ class SatFunctionDeclaration {
     // std::unordered_set allow fast check that string is an input
     unordered_set<string> inputsMap;
     vector<string> inputs;
-    vector<FullVariableName> outputStructs;
     NIdentifier output;
     unique_ptr<NBlock> body;
 public:
-    SatFunctionDeclaration(): inputs(), outputStructs(), output("", "", 0), body() {}
+    SatFunctionDeclaration(): inputs(), output("", "", 0), body() {}
 
     void addInput(const string &input) {
         if (isInput(input)) {
@@ -37,10 +36,6 @@ public:
 
     bool isInput(const string & name) const {
         return inputsMap.count(name) > 0;
-    }
-
-    void addOutput(const string &functionName, const string &name, const string &field) {
-        outputStructs.push_back(FullVariableName(functionName, name, field));
     }
 
     void addTrueOutput(const NIdentifier &output) {
@@ -139,8 +134,6 @@ public:
     }
 
     NExpression * mapToInput(const NIdentifier &nIdentifier);
-
-    void addOutput(const NIdentifier &variableName);
 
     void addTrueOutput(const NIdentifier &variableName);
 

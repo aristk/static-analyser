@@ -22,11 +22,6 @@ void NFunctionDeclaration::genCheck(SatStaticAnalyzer &context) const {
 }
 
 void NVariableDeclaration::genCheck(SatStaticAnalyzer &context) const {
-    // if variable is a struct and is an input add it to outputs
-    if((this->id.field != "") && (context.isCurrentInput(id))) {
-        context.addOutput(id);
-    }
-
     assignmentExpr->addClauses(id, context);
 }
 
