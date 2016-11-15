@@ -83,6 +83,19 @@ public:
 
 };
 
+class couldNotOpenFile: public exception {
+    string output;
+
+    virtual const char *what() const throw() {
+        return output.c_str();
+    }
+
+public:
+    couldNotOpenFile(const char *fileName) : output("couldn’t open ") {
+        output.append(fileName);
+    }
+};
+
 class isAlreadyAnInput: public exception {
     string output;
     virtual const char* what() const throw() {

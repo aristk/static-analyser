@@ -1,11 +1,14 @@
 #include <iostream>
 
 #include "gtest/gtest.h"
+#include "src/core.hpp"
 
-extern int core(int argc, char **argv);
+using namespace std;
 
 // TODO: make positive tests more meaningful (check line and values)
 TEST(testCore, PositiveTests) {
+
+    vector<pair<int, unsigned int> > answers;
 
     char* argv[] = { "", "test/example.myprog" };
 
@@ -21,9 +24,12 @@ TEST(testCore, PositiveTests) {
 
     argv[1] = "test/simpleEQ.myprog";
 
+//    answers = parseAndAnalyze(argv[1]);
+
     EXPECT_EQ(0, core(2, argv));
 }
 
+// TODO: check for exception strings
 TEST(testCore, NegativeTestsAnalyzerExceptions) {
 
     char* argv[] = { "", "test/global_var.myprog" };
@@ -34,12 +40,15 @@ TEST(testCore, NegativeTestsAnalyzerExceptions) {
 
     EXPECT_EQ(1, core(2, argv));
 
+
+    argv[1] = "test/myprog" ;
+
+    EXPECT_EQ(1, core(2, argv));
 }
 
-/* looks like fail of parser crashing is not concurrent
+// TODO: looks like crash of parser is due to one instance of it
 TEST(testCore, NegativeTestsParserFails) {
     char* argv[] = { "", "test/assignment_in_arg.myprog" };
 
     EXPECT_EQ(1, core(2, argv));
 }
- */

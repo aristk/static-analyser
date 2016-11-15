@@ -81,12 +81,19 @@ class SatStaticAnalyzer : public StaticAnalyzer {
 
     unsigned int getIdentifierVariables(const NIdentifier &nIdentifier);
     unsigned int addNewVariable(const NIdentifier &nIdentifier);
+
+    vector<pair<int, unsigned int> > answers;
 public:
-    SatStaticAnalyzer() : numOfBitsPerInt(2), solver(new SATSolver), variables(), variableOccurrences(), callStack(), functions(), correspondences(), currentFunctionName() {}
+    SatStaticAnalyzer() : numOfBitsPerInt(2), solver(new SATSolver), variables(), variableOccurrences(), callStack(),
+                          functions(), correspondences(), currentFunctionName(), answers() { }
 
     virtual void addClauses(const NIdentifier &lhs, const NInteger &nInteger);
     virtual void addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator);
     virtual void addClauses(const NIdentifier &lhs, const NIdentifier &rhs);
+
+    vector<pair<int, unsigned int> > getAnswers() {
+        return answers;
+    };
 
     const unsigned int getOccurrences(const FullVariableName &variableName) const {
         unsigned int answer = 0;
@@ -142,4 +149,6 @@ public:
     virtual ~SatStaticAnalyzer() {}
 
     FullVariableNameOccurrence getFullVariableNameOccurrence(const NIdentifier &nIdentifier);
+
+    void updateAnswers(const string &opName, const NIdentifier &lhs);
 };

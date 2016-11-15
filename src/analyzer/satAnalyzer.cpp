@@ -134,11 +134,16 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator
         solver->add_clause(UnitClause);
     }
 
+    updateAnswers("binOp", lhs);
+}
+
+void SatStaticAnalyzer::updateAnswers(const string &opName, const NIdentifier &lhs) {
     // TODO: good option here is to introduce a class with undef and int values of return
     int returnValue;
     if (isConstant(returnValue, lhs)) {
-        cout << lhs.printName() << " from binOp is " << returnValue <<
+        cout << lhs.printName() << " from " << opName << " is " << returnValue <<
              " at line " << lhs.lineNumber << endl;
+        answers.push_back(make_pair(returnValue, lhs.lineNumber));
     }
 }
 
@@ -260,11 +265,7 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
         // map function output and new variable
         addClauses(output, calledFunction->getTrueOutput());
 
-        int returnValue;
-        if (isConstant(returnValue, output)) {
-            cout << output.printName() << " from func \"" << calledFunctionName << "\" is " << returnValue <<
-                 " at line " << output.lineNumber << endl;
-        }
+        updateAnswers("func \"" + calledFunctionName + "\"", output);
     }
 }
 
