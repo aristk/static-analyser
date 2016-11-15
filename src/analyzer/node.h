@@ -112,7 +112,6 @@ public:
     NExpression& rhs;
     NAssignment(NIdentifier& lhs, NExpression& rhs) :
             lhs(lhs), rhs(rhs) { }
-//    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NBlock : public NExpression {
