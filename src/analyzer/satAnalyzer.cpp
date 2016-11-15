@@ -57,8 +57,8 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rh
 
     const int variableCount = 2;
     vector<unsigned int> nVars(variableCount);
-    nVars[0] = addNewVariable(lhs);
-    nVars[1] = getIdentifierVariables(rhs);
+    nVars[0] = getLhsSatVar(lhs);
+    nVars[1] = getRhsSatVar(rhs);
     vector<unsigned int> clause(variableCount);
 
     for (int i = 0; i < numOfBitsPerInt; i++) {
@@ -72,7 +72,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rh
 void SatStaticAnalyzer::addClauses(const NIdentifier &key, const NInteger &nInteger) {
     int value = nInteger.value;
 
-    unsigned int nVars = addNewVariable(key);
+    unsigned int nVars = getLhsSatVar(key);
     vector<Lit> clause(1);
 
     for (int i = 0; i < numOfBitsPerInt; i++) {
@@ -89,12 +89,12 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator
 
     // create dummy variables for computations
     nVars[0] = addNewVariable(NIdentifier("","",0));
-    nVars[1] = getIdentifierVariables(nBinaryOperator.lhs);
-    nVars[2] = getIdentifierVariables(nBinaryOperator.rhs);
+    nVars[1] = getRhsSatVar(nBinaryOperator.lhs);
+    nVars[2] = getRhsSatVar(nBinaryOperator.rhs);
 
     // add new variables to handle output of NBinaryOperator
     unsigned int newVarLast = solver->nVars();
-    nVars[3] = addNewVariable(lhs);
+    nVars[3] = getLhsSatVar(lhs);
 
     vector<unsigned int> clause(variableCount);
     vector<Lit> binClause(2);
@@ -226,7 +226,7 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
     vector<string> originalInputs = calledFunction->getInputs();
 
     // map inputs
-    // TODO: should not be used
+    // TODO: check that integer input is not used as struct later
     for(int i = 0; i < methodCall.arguments.size(); i++) {
         correspondences.emplace(originalInputs[i], methodCall.arguments[i]);
         // TODO: check that number of inputs is the same
@@ -263,14 +263,25 @@ NExpression * SatStaticAnalyzer::mapToInput(const NIdentifier &nIdentifier) {
     return nullptr;
 }
 
-unsigned int SatStaticAnalyzer::getRhsSatVar(NIdentifier *lhs) {
+unsigned int SatStaticAnalyzer::getRhsSatVar(const NIdentifier &lhs) {
     SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
-    string name = lhs->name;
+    string name = lhs.name;
 
     if (currentFunction->isInput(name)) {
-        currentFunction->addInputUsage(lhs);
+        currentFunction->addRhsInputUsage(lhs);
     }
 
-    return getIdentifierVariables(*lhs);
+    return getIdentifierVariables(lhs);
+}
+
+unsigned int SatStaticAnalyzer::getLhsSatVar(const NIdentifier &lhs) {
+    SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
+    string name = lhs.name;
+
+    if (currentFunction->isInput(name)) {
+        currentFunction->addLhsInputUsage(lhs);
+    }
+
+    return addNewVariable(lhs);
 }
 

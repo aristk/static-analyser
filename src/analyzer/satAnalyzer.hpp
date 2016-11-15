@@ -15,9 +15,11 @@ class SatFunctionDeclaration {
     vector<string> inputs;
     NIdentifier output;
     unique_ptr<NBlock> body;
-    map<string, vector<NIdentifier *> > inputUsages;
+    // TODO: use pointers to NIdentifier's here
+    map<string, vector<NIdentifier> > inputRhsUsages;
+    map<string, vector<NIdentifier> > inputLhsUsages;
 public:
-    SatFunctionDeclaration(): inputs(), output("", "", 0), body(), inputUsages() {}
+    SatFunctionDeclaration(): inputs(), output("", "", 0), body(), inputRhsUsages(), inputLhsUsages() {}
 
     void addInput(const string &input) {
         if (isInput(input)) {
@@ -39,9 +41,14 @@ public:
         return inputsMap.count(name) > 0;
     }
 
-    void addInputUsage(NIdentifier *nIdentifier) {
-        inputUsages[nIdentifier->name].push_back(nIdentifier);
+    void addRhsInputUsage(NIdentifier nIdentifier) {
+        inputRhsUsages[nIdentifier.name].push_back(nIdentifier);
     }
+
+    void addLhsInputUsage(NIdentifier nIdentifier) {
+        inputLhsUsages[nIdentifier.name].push_back(nIdentifier);
+    }
+
 
     void addTrueOutput(const NIdentifier &output) {
         this->output = output;
@@ -148,5 +155,7 @@ public:
 
     void updateAnswers(const string &opName, const NIdentifier &lhs);
 
-    unsigned int getRhsSatVar(NIdentifier *lhs);
+    unsigned int getRhsSatVar(const NIdentifier &lhs);
+
+    unsigned int getLhsSatVar(const NIdentifier &lhs);
 };
