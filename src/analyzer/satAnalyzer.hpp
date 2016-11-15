@@ -15,8 +15,9 @@ class SatFunctionDeclaration {
     vector<string> inputs;
     NIdentifier output;
     unique_ptr<NBlock> body;
+    map<string, vector<NIdentifier *> > inputUsages;
 public:
-    SatFunctionDeclaration(): inputs(), output("", "", 0), body() {}
+    SatFunctionDeclaration(): inputs(), output("", "", 0), body(), inputUsages() {}
 
     void addInput(const string &input) {
         if (isInput(input)) {
@@ -36,6 +37,10 @@ public:
 
     bool isInput(const string & name) const {
         return inputsMap.count(name) > 0;
+    }
+
+    void addInputUsage(NIdentifier *nIdentifier) {
+        inputUsages[nIdentifier->name].push_back(nIdentifier);
     }
 
     void addTrueOutput(const NIdentifier &output) {
@@ -116,8 +121,6 @@ public:
 
     void generateCheck(const NBlock& root);
 
-    bool isCurrentInput(const NIdentifier &nIdentifier);
-
     const string getCurrentFunctionName() const {
         return currentFunctionName;
     }
@@ -144,4 +147,6 @@ public:
     FullVariableNameOccurrence getFullVariableNameOccurrence(const NIdentifier &nIdentifier);
 
     void updateAnswers(const string &opName, const NIdentifier &lhs);
+
+    unsigned int getRhsSatVar(NIdentifier *lhs);
 };

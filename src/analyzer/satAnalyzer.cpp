@@ -217,12 +217,6 @@ void SatStaticAnalyzer::addTrueOutput(const NIdentifier &variableName){
     currentFunction->addTrueOutput(variableName);
 }
 
-bool SatStaticAnalyzer::isCurrentInput(const NIdentifier &nIdentifier) {
-    SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
-
-    return currentFunction->isInput(nIdentifier.name);
-}
-
 void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIdentifier &output) {
 
     string calledFunctionName = methodCall.id.name;
@@ -267,5 +261,16 @@ NExpression * SatStaticAnalyzer::mapToInput(const NIdentifier &nIdentifier) {
         return correspondences[nIdentifier.name];
     }
     return nullptr;
+}
+
+unsigned int SatStaticAnalyzer::getRhsSatVar(NIdentifier *lhs) {
+    SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
+    string name = lhs->name;
+
+    if (currentFunction->isInput(name)) {
+        currentFunction->addInputUsage(lhs);
+    }
+
+    return getIdentifierVariables(*lhs);
 }
 
