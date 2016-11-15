@@ -8,6 +8,7 @@ using namespace std;
 
 extern NBlock* programBlock;
 extern int yyparse();
+extern void yyset_lineno (int  line_number );
 extern FILE *yyin;
 
 vector<pair<int, unsigned int> > parseAndAnalyze(const char *fileName) {
@@ -17,8 +18,11 @@ vector<pair<int, unsigned int> > parseAndAnalyze(const char *fileName) {
         throw couldNotOpenFile(fileName);
     }
 
+    cout << "parsing file: " << fileName << endl;
+
     vector<pair<int, unsigned int> > answer(0);
     yyin = file; // now flex reads from file
+    yyset_lineno (1);
     yyparse();
     fclose(file);
 

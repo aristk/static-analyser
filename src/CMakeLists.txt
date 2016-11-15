@@ -1,7 +1,5 @@
 project(staticAnalyzer)
 
-set(CMAKE_CXX_STANDARD 11)
-
 # lex -o tokens.cpp tokens.l
 # Create custom command for flex/lex (note the outputs)
 FIND_PACKAGE(FLEX REQUIRED)

@@ -3,7 +3,12 @@
 ################################
 add_subdirectory(libs/googletest-release-1.8.0)
 enable_testing()
-include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR} ${CMAKE_SOURCE_DIR})
+include_directories(
+        ${gmock_SOURCE_DIR}/include
+        ${gmock_SOURCE_DIR}
+        ${gtest_SOURCE_DIR}/include
+        ${gtest_SOURCE_DIR}
+        ${CMAKE_SOURCE_DIR})
 
         ################################
 # Unit Tests
