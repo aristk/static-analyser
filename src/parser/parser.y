@@ -4,7 +4,7 @@ NBlock *programBlock; /* the top level root node of our final AST */
 
 extern int yylex();
 extern int yyget_lineno();
-void yyerror(const char *s) { printf("ERROR: %sn", s); }
+void yyerror(const char *s) { throw parserError(s);}
 %}
 /* for more error verbose */
 %error-verbose

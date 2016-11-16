@@ -5,8 +5,7 @@ CMakeLists.txt:
 Parser:
 1. make flex/bison compatable with C++11
 2. AST (node.h):
-2.1 remove LLVM deps
-2.2. add check that function was not defined previously
+2.1. add check that function was not defined previously
 
 Language:
 1. Could we have nested function declarations? Assume, no.

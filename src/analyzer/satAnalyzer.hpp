@@ -17,11 +17,8 @@ class SatFunctionDeclaration {
     map<string, string> callInputMap;
     NIdentifier output;
     unique_ptr<NBlock> body;
-    // TODO: use pointers to NIdentifier's here
-    map<string, vector<NIdentifier> > inputRhsUsages;
-    map<string, vector<NIdentifier> > inputLhsUsages;
 public:
-    SatFunctionDeclaration(): inputs(), callInputMap(), output("", "", 0), body(), inputRhsUsages(), inputLhsUsages() {}
+    SatFunctionDeclaration(): inputs(), callInputMap(), output("", "", 0), body() {}
 
     void addInput(const string &input) {
         if (isInput(input)) {
@@ -58,19 +55,6 @@ public:
     bool isInput(const string & name) const {
         return inputsMap.count(name) > 0;
     }
-
-    void addRhsInputUsage(NIdentifier nIdentifier) {
-        if (inputRhsUsages.count(nIdentifier.name) == 0) {
-            inputRhsUsages[nIdentifier.name].push_back(nIdentifier);
-        }
-    }
-
-    void addLhsInputUsage(NIdentifier nIdentifier) {
-        if (inputLhsUsages.count(nIdentifier.name) == 0) {
-            inputLhsUsages[nIdentifier.name].push_back(nIdentifier);
-        }
-    }
-
 
     void addTrueOutput(const NIdentifier &output) {
         this->output = output;
@@ -120,8 +104,7 @@ public:
     SatStaticAnalyzer() : solver(new SATSolver), variables(), variableOccurrences(), callStack(),
                           functions(), correspondences(), currentFunctionName(), answers() {
         // we need at least one bit for boolean variable
-        numOfBitsPerInt = ceil(log2(max((unsigned int)
-        2, NInteger::differentIntCount)));
+        numOfBitsPerInt = (unsigned int) ceil(log2(max((unsigned int) 2, NInteger::differentIntCount)));
     }
 
     virtual void addClauses(const NIdentifier &lhs, const NInteger &nInteger);
@@ -160,22 +143,12 @@ public:
 
     void generateCheck(const NBlock& root);
 
-    const string getCurrentFunctionName() const {
-        return currentFunctionName;
-    }
-
-    SATSolver *getSolver() const {
-        return solver.get();
-    }
-
     SatFunctionDeclaration *getFunction(const string &name) {
         if (functions.count(name) == 0) {
             throw FunctionIsNotDefined();
         }
         return functions.at(name).get();
     }
-
-    NExpression * mapToInput(const NIdentifier &nIdentifier);
 
     void addTrueOutput(const NIdentifier &variableName);
 
@@ -187,7 +160,4 @@ public:
 
     void updateAnswers(const string &opName, const NIdentifier &lhs);
 
-    unsigned int getRhsSatVar(const NIdentifier &lhs);
-
-    unsigned int getLhsSatVar(const NIdentifier &rhs);
 };

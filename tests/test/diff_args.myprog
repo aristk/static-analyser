@@ -1,0 +1,7 @@
+func foo(a, b) {
+ a.x = b
+}
+
+func bar() {
+    foo(x, y, z)
+}

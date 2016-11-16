@@ -59,15 +59,21 @@ class InputIsAStruct: public exception {
     }
 };
 
-class SatVariableIsNotDefinened: public exception {
+class SatVariableIsNotDefined: public exception {
     virtual const char* what() const throw() {
         return "Current variable was not used yet.";
     }
 };
 
-class SatVariableAreAlreadyDefinened: public exception {
+class SatVariableAreAlreadyDefined: public exception {
     virtual const char* what() const throw() {
         return "Current variable was already used.";
+    }
+};
+
+class differentNumberOfArgsInFunctionCall: public exception {
+    virtual const char* what() const throw() {
+        return "Call of function has different number of arguments with respect to declaration.";
     }
 };
 
@@ -104,6 +110,17 @@ class isAlreadyAnInput: public exception {
 public:
     isAlreadyAnInput(const string& input) :
             output("Variable \"" + input + "\" already defined as input") { }
+};
+
+
+class parserError: public exception {
+    string output;
+    virtual const char* what() const throw() {
+        return output.c_str();
+    }
+public:
+    parserError(const string& input) :
+            output("Parser error: " + input) { }
 };
 
 class isWrongModel: public exception {

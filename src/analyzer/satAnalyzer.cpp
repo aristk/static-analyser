@@ -60,8 +60,6 @@ FullVariableNameOccurrence SatStaticAnalyzer::getFullVariableNameOccurrence(cons
     FullVariableNameOccurrence key =
             make_tuple(get<0>(fullVariableName), get<1>(fullVariableName), get<2>(fullVariableName), occurrence);
 
-//    cout << get<1>(key) << "." << get<2>(key);
-
     return key;
 }
 
@@ -81,10 +79,8 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rh
 
     const int variableCount = 2;
     vector<unsigned int> nVars(variableCount);
-    nVars[0] = getLhsSatVar(lhs);
-//    cout << " = ";
-    nVars[1] = getRhsSatVar(rhs);
-//    cout << endl;
+    nVars[0] = addNewVariable(lhs);
+    nVars[1] = getIdentifierVariables(rhs);
     vector<unsigned int> clause(variableCount);
 
     for (int i = 0; i < numOfBitsPerInt; i++) {
@@ -99,9 +95,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NInteger &nInte
 
     int value = NInteger::intMapping[nInteger.value];
 
-    unsigned int nVars = getLhsSatVar(lhs);
-
-//    cout << " = " << value << endl;
+    unsigned int nVars = addNewVariable(lhs);
 
     vector<Lit> clause(1);
 
@@ -121,15 +115,12 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator
 
     // add new variables to handle output of NBinaryOperator
     unsigned int newVarLast = solver->nVars();
-    nVars[3] = getLhsSatVar(lhs);
-//    cout << " = ";
+    nVars[3] = addNewVariable(lhs);
 
     // create dummy variables for computations
     nVars[0] = addNewVariable(NIdentifier("", "", 0));
-    nVars[1] = getRhsSatVar(nBinaryOperator.lhs);
-//    cout << " == ";
-    nVars[2] = getRhsSatVar(nBinaryOperator.rhs);
-//    cout << endl;
+    nVars[1] = getIdentifierVariables(nBinaryOperator.lhs);
+    nVars[2] = getIdentifierVariables(nBinaryOperator.rhs);
 
     vector<unsigned int> clause(variableCount);
     vector<Lit> binClause(2);
@@ -263,13 +254,16 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
 
     vector<string> originalInputs = calledFunction->getInputs();
 
+    if (methodCall.arguments.size() != originalInputs.size()) {
+        throw differentNumberOfArgsInFunctionCall();
+    }
+
     // map inputs
     // TODO: check that integer input is not used as struct later
     // TODO: if input struct is used in call function, it should be added to inputs
     for(int i = 0; i < methodCall.arguments.size(); i++) {
         correspondences.emplace(originalInputs[i], methodCall.arguments[i]);
         methodCall.arguments[i]->processCallInput(i, *this);
-        // TODO: check that number of inputs is the same
     }
 
     // since we cannot remove variables and clauses, we need to store transitions separately (as new lhs variables)
@@ -284,8 +278,6 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
     correspondences.clear();
     calledFunction->clearCallInputMap();
 
-    // cout << "checking function " <<  calledFunctionName << "()" << endl;
-
     callStack.pop();
 
     // map and check true output
@@ -295,41 +287,6 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
 
         updateAnswers("func \"" + calledFunctionName + "\"", output);
     }
-}
-
-NExpression * SatStaticAnalyzer::mapToInput(const NIdentifier &nIdentifier) {
-    if (!correspondences.empty() && (correspondences.count(nIdentifier.name) > 0)) {
-        return correspondences[nIdentifier.name];
-    }
-    return nullptr;
-}
-
-unsigned int SatStaticAnalyzer::getRhsSatVar(const NIdentifier &lhs) {
-    // update usages only in case of function declaration
-    if (!callStack.empty()) {
-        SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
-        string name = lhs.name;
-
-        if (currentFunction->isInput(name)) {
-            currentFunction->addRhsInputUsage(lhs);
-        }
-    }
-
-    return getIdentifierVariables(lhs);
-}
-
-unsigned int SatStaticAnalyzer::getLhsSatVar(const NIdentifier &rhs) {
-    // update usages only in case of function declaration
-    if (!callStack.empty()) {
-        SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
-        string name = rhs.name;
-
-        if (currentFunction->isInput(name)) {
-            currentFunction->addLhsInputUsage(rhs);
-        }
-    }
-
-    return addNewVariable(rhs);
 }
 
 

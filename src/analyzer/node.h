@@ -22,9 +22,6 @@ typedef std::vector<NIdentifier*> VariableList;
 
 class Node {
 public:
-    virtual int getTypeId() const {
-        return 0;
-    }
     virtual ~Node() {}
 
     std::string name() const { return typeid(*this).name(); }
@@ -69,9 +66,6 @@ public:
 
     virtual void addClauses(const NIdentifier &nIdentifier, SatStaticAnalyzer &context) const;
 
-    virtual int getTypeId() const {
-        return 1;
-    }
 };
 
 class NIdentifier : public NExpression {
@@ -90,9 +84,6 @@ public:
             return name + "." + field;
         else
             return name;
-    }
-    virtual int getTypeId() const {
-        return 2;
     }
 
     virtual void processCallInput(unsigned int inputId, SatStaticAnalyzer &context);
@@ -115,7 +106,7 @@ public:
     bool op;
     NIdentifier& lhs;
     NIdentifier& rhs;
-    NBinaryOperator(NIdentifier& lhs, int op, NIdentifier& rhs) :
+    NBinaryOperator(NIdentifier &lhs, bool op, NIdentifier &rhs) :
             lhs(lhs), rhs(rhs), op(op) { }
 
     virtual void addClauses(const NIdentifier &nIdentifier, SatStaticAnalyzer &context) const;

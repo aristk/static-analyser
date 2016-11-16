@@ -45,7 +45,6 @@ TEST(testCore, PositiveTests) {
 TEST(testCore, NegativeTestsAnalyzerExceptions) {
 
     string inputFileName;
-    char* argv[2];
     inputFileName = "test/field_in_arg.myprog";
 
     ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), InputIsAStruct);
@@ -57,12 +56,15 @@ TEST(testCore, NegativeTestsAnalyzerExceptions) {
     inputFileName = "test/myprog" ;
 
     ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), couldNotOpenFile);
+
+    inputFileName = "test/diff_args.myprog" ;
+
+    ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), differentNumberOfArgsInFunctionCall);
 }
 
 // TODO: looks like crash of parser is due to one instance of it
 TEST(testCore, NegativeTestsParserFails) {
-    char* argv[2];
-    argv[1] = "test/assignment_in_arg.myprog";
+    string inputFileName = "test/assignment_in_arg.myprog";
 
-    EXPECT_EQ(1, core(2, argv));
+    ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), parserError);
 }
