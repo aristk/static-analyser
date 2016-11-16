@@ -32,7 +32,14 @@ public:
     }
 
     void mapCallInput(const string &localName, const string &nameInCall) {
-        callInputMap.emplace(localName,nameInCall);
+        callInputMap.emplace(localName, nameInCall);
+    }
+
+    const string getCallArgument(const string &localName) const {
+        if (callInputMap.count(localName) == 0) {
+            return "";
+        }
+        return callInputMap.at(localName);
     }
 
     void clearCallInputMap() {
@@ -141,9 +148,7 @@ public:
         variableOccurrences[variableName] = occurence;
     }
 
-    const FullVariableName NIdentifierToFullName(const NIdentifier &lhs) {
-        return FullVariableName(currentFunctionName, lhs.name, lhs.field);
-    }
+    const FullVariableName NIdentifierToFullName(const NIdentifier &lhs);
 
     void mapMethodCall(const NMethodCall &methodCall, const NIdentifier &output);
 

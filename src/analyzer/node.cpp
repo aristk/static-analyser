@@ -55,7 +55,11 @@ void NInteger::processCallInput(unsigned int inputId, SatStaticAnalyzer &context
 
     string inputName = calledFunction->getInput(inputId);
 
-    NIdentifier lhs(inputName, 0);
+    NIdentifier lhs(to_string(value) + inputName, 0);
+
+    // we to map all inputs also that have integer values, for that we need a new name
+    calledFunction->mapCallInput(inputName, lhs.name);
+
     context.addClauses(lhs, *this);
 }
 
@@ -66,31 +70,7 @@ void NBinaryOperator::addClauses(const NIdentifier &lhs, SatStaticAnalyzer &cont
 
 // lhs = this
 void NIdentifier::addClauses(const NIdentifier &lhs, SatStaticAnalyzer &context) const {
-    NExpression *nExpressionLhs = context.mapToInput(lhs);
-    NIdentifier newLhs = lhs;
-
-    // TODO: do not use dynamic_cast
-
-    if(nExpressionLhs) {
-        if (nExpressionLhs->getTypeId() == 2) {
-            newLhs.name = dynamic_cast<NIdentifier *>(nExpressionLhs)->name;
-        }
-    }
-
-    NExpression *nExpressionRhs = context.mapToInput(*this);
-    if (nExpressionRhs && nExpressionRhs->getTypeId() == 2) {
-        NIdentifier newRhs = *this;
-        switch (nExpressionRhs->getTypeId()) {
-            case 2:
-                newRhs.name = dynamic_cast<NIdentifier *>(nExpressionRhs)->name;
-                context.addClauses(newLhs, newRhs);
-                break;
-            default:
-                throw WrongFunctionArgument();
-        }
-    } else {
-        context.addClauses(newLhs, *this);
-    }
+    context.addClauses(lhs, *this);
 }
 
 void NIdentifier::processCallInput(unsigned int inputId, SatStaticAnalyzer &context) {
@@ -100,6 +80,6 @@ void NIdentifier::processCallInput(unsigned int inputId, SatStaticAnalyzer &cont
 
     string inputName = calledFunction->getInput(inputId);
 
-    calledFunction->mapCallInput(name, inputName);
+    calledFunction->mapCallInput(inputName, name);
 }
 

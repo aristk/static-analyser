@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "analyzer/node.h"
 #include "satAnalyzer.hpp"
 
@@ -15,6 +16,7 @@ unsigned int SatStaticAnalyzer::addNewVariable(const NIdentifier &nIdentifier) {
 
     unsigned int nVars = solver->nVars();
 
+    // TODO: if addNewVariable called from getIdentifierVariables then getFullVariableNameOccurrence called twice
     FullVariableNameOccurrence key = getFullVariableNameOccurrence(nIdentifier);
 
     // in case of dummy variables, do not map them
@@ -33,19 +35,41 @@ unsigned int SatStaticAnalyzer::addNewVariable(const NIdentifier &nIdentifier) {
     return nVars;
 }
 
+const FullVariableName SatStaticAnalyzer::NIdentifierToFullName(const NIdentifier &lhs) {
+    string variableName = lhs.name;
+
+    if(!callStack.empty()) {
+        string calledFunctionName = this->getCurrentCall();
+        SatFunctionDeclaration *currentFunction = getFunction(calledFunctionName);
+
+        string newVariableName = currentFunction->getCallArgument(variableName);
+        if (newVariableName != "") {
+            variableName = newVariableName;
+        }
+    }
+
+    return FullVariableName(currentFunctionName, variableName, lhs.field);
+}
+
 FullVariableNameOccurrence SatStaticAnalyzer::getFullVariableNameOccurrence(const NIdentifier &nIdentifier) {
+
     FullVariableName fullVariableName = NIdentifierToFullName(nIdentifier);
 
     unsigned int occurrence = getOccurrences(fullVariableName);
 
     FullVariableNameOccurrence key =
             make_tuple(get<0>(fullVariableName), get<1>(fullVariableName), get<2>(fullVariableName), occurrence);
+
+//    cout << get<1>(key) << "." << get<2>(key);
+
     return key;
 }
 
 unsigned int
 SatStaticAnalyzer::getIdentifierVariables(const NIdentifier &nIdentifier) {
+
     FullVariableNameOccurrence key = getFullVariableNameOccurrence(nIdentifier);
+
     // if variables was not defined, define them
     if (variables.count(key) == 0) {
         addNewVariable(nIdentifier);
@@ -58,7 +82,9 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rh
     const int variableCount = 2;
     vector<unsigned int> nVars(variableCount);
     nVars[0] = getLhsSatVar(lhs);
+//    cout << " = ";
     nVars[1] = getRhsSatVar(rhs);
+//    cout << endl;
     vector<unsigned int> clause(variableCount);
 
     for (int i = 0; i < numOfBitsPerInt; i++) {
@@ -69,10 +95,14 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rh
     }
 }
 
-void SatStaticAnalyzer::addClauses(const NIdentifier &key, const NInteger &nInteger) {
+void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NInteger &nInteger) {
+
     int value = NInteger::intMapping[nInteger.value];
 
-    unsigned int nVars = getLhsSatVar(key);
+    unsigned int nVars = getLhsSatVar(lhs);
+
+//    cout << " = " << value << endl;
+
     vector<Lit> clause(1);
 
     for (int i = 0; i < numOfBitsPerInt; i++) {
@@ -84,18 +114,22 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &key, const NInteger &nInte
 
 // TODO: required automatic tests
 void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator) {
+
     // TODO: check that operands of BinaryOperator could not be integers or structs
     const int variableCount = 3;
     vector<unsigned int> nVars(variableCount+1);
 
-    // create dummy variables for computations
-    nVars[0] = addNewVariable(NIdentifier("","",0));
-    nVars[1] = getRhsSatVar(nBinaryOperator.lhs);
-    nVars[2] = getRhsSatVar(nBinaryOperator.rhs);
-
     // add new variables to handle output of NBinaryOperator
     unsigned int newVarLast = solver->nVars();
     nVars[3] = getLhsSatVar(lhs);
+//    cout << " = ";
+
+    // create dummy variables for computations
+    nVars[0] = addNewVariable(NIdentifier("", "", 0));
+    nVars[1] = getRhsSatVar(nBinaryOperator.lhs);
+//    cout << " == ";
+    nVars[2] = getRhsSatVar(nBinaryOperator.rhs);
+//    cout << endl;
 
     vector<unsigned int> clause(variableCount);
     vector<Lit> binClause(2);
@@ -157,7 +191,9 @@ SatStaticAnalyzer::isConstant(int &returnValue, const NIdentifier &key) {
 
     const unsigned int lowerBitVariable = getIdentifierVariables(key);
 
-    solver->solve();
+    lbool result = solver->solve();
+
+    assert(result == l_True);
 
     int countEqualBits = 0;
     returnValue = 0;
@@ -246,6 +282,7 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
 
     // TODO: could be buggy here: it is more clear way to implement something like "call stack" with correspondences
     correspondences.clear();
+    calledFunction->clearCallInputMap();
 
     // cout << "checking function " <<  calledFunctionName << "()" << endl;
 
@@ -294,4 +331,5 @@ unsigned int SatStaticAnalyzer::getLhsSatVar(const NIdentifier &rhs) {
 
     return addNewVariable(rhs);
 }
+
 
