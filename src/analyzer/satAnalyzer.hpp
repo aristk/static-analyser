@@ -14,13 +14,14 @@ class SatFunctionDeclaration {
     // std::unordered_set allow fast check that string is an input
     unordered_set<string> inputsMap;
     vector<string> inputs;
+    map<string, string> callInputMap;
     NIdentifier output;
     unique_ptr<NBlock> body;
     // TODO: use pointers to NIdentifier's here
     map<string, vector<NIdentifier> > inputRhsUsages;
     map<string, vector<NIdentifier> > inputLhsUsages;
 public:
-    SatFunctionDeclaration(): inputs(), output("", "", 0), body(), inputRhsUsages(), inputLhsUsages() {}
+    SatFunctionDeclaration(): inputs(), callInputMap(), output("", "", 0), body(), inputRhsUsages(), inputLhsUsages() {}
 
     void addInput(const string &input) {
         if (isInput(input)) {
@@ -29,6 +30,15 @@ public:
         inputsMap.emplace(input);
         inputs.push_back(input);
     }
+
+    void mapCallInput(const string &localName, const string &nameInCall) {
+        callInputMap.emplace(localName,nameInCall);
+    }
+
+    void clearCallInputMap() {
+        callInputMap.clear();
+    }
+
 
     void addBody(NBlock *FunctionBody) {
         body = move(unique_ptr<NBlock>(FunctionBody));
@@ -65,6 +75,10 @@ public:
 
     const vector<string> getInputs() const {
         return inputs;
+    }
+
+    const string getInput(const unsigned int id) const {
+        return inputs[id];
     }
 };
 
@@ -110,6 +124,10 @@ public:
     vector<pair<int, unsigned int> > getAnswers() {
         return answers;
     };
+
+    const string getCurrentCall() {
+        return callStack.top();
+    }
 
     const unsigned int getOccurrences(const FullVariableName &variableName) const {
         unsigned int answer = 0;

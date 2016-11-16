@@ -48,6 +48,17 @@ void NInteger::addClauses(const NIdentifier &lhs, SatStaticAnalyzer &context) co
     context.addClauses(lhs, *this);
 }
 
+void NInteger::processCallInput(unsigned int inputId, SatStaticAnalyzer &context) {
+    const string callFunctionName = context.getCurrentCall();
+
+    SatFunctionDeclaration *calledFunction = context.getFunction(callFunctionName);
+
+    string inputName = calledFunction->getInput(inputId);
+
+    NIdentifier lhs(inputName, 0);
+    context.addClauses(lhs, *this);
+}
+
 // key = this
 void NBinaryOperator::addClauses(const NIdentifier &lhs, SatStaticAnalyzer &context) const {
     context.addClauses(lhs, *this);
@@ -67,12 +78,9 @@ void NIdentifier::addClauses(const NIdentifier &lhs, SatStaticAnalyzer &context)
     }
 
     NExpression *nExpressionRhs = context.mapToInput(*this);
-    if (nExpressionRhs) {
+    if (nExpressionRhs && nExpressionRhs->getTypeId() == 2) {
         NIdentifier newRhs = *this;
         switch (nExpressionRhs->getTypeId()) {
-            case 1:
-                context.addClauses(newLhs, *dynamic_cast<NInteger *>(nExpressionRhs));
-                break;
             case 2:
                 newRhs.name = dynamic_cast<NIdentifier *>(nExpressionRhs)->name;
                 context.addClauses(newLhs, newRhs);
@@ -83,5 +91,15 @@ void NIdentifier::addClauses(const NIdentifier &lhs, SatStaticAnalyzer &context)
     } else {
         context.addClauses(newLhs, *this);
     }
+}
+
+void NIdentifier::processCallInput(unsigned int inputId, SatStaticAnalyzer &context) {
+    const string callFunctionName = context.getCurrentCall();
+
+    SatFunctionDeclaration *calledFunction = context.getFunction(callFunctionName);
+
+    string inputName = calledFunction->getInput(inputId);
+
+    calledFunction->mapCallInput(name, inputName);
 }
 

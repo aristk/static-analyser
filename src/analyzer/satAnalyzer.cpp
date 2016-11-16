@@ -84,6 +84,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &key, const NInteger &nInte
 
 // TODO: required automatic tests
 void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator) {
+    // TODO: check that operands of BinaryOperator could not be integers or structs
     const int variableCount = 3;
     vector<unsigned int> nVars(variableCount+1);
 
@@ -217,6 +218,7 @@ void SatStaticAnalyzer::addTrueOutput(const NIdentifier &variableName){
     currentFunction->addTrueOutput(variableName);
 }
 
+
 void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIdentifier &output) {
 
     string calledFunctionName = methodCall.id.name;
@@ -230,6 +232,7 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
     // TODO: if input struct is used in call function, it should be added to inputs
     for(int i = 0; i < methodCall.arguments.size(); i++) {
         correspondences.emplace(originalInputs[i], methodCall.arguments[i]);
+        methodCall.arguments[i]->processCallInput(i, *this);
         // TODO: check that number of inputs is the same
     }
 

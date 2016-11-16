@@ -40,6 +40,10 @@ public:
 };
 
 class NExpression : public Node {
+public:
+    virtual void processCallInput(unsigned int inputId, SatStaticAnalyzer &context) {
+        throw functionIsNotImplemented("processCallInput", name());
+    }
 };
 
 class NStatement : public Node {
@@ -60,6 +64,8 @@ public:
             differentIntCount++;
         }
     }
+
+    virtual void processCallInput(unsigned int inputId, SatStaticAnalyzer &context);
 
     virtual void addClauses(const NIdentifier &nIdentifier, SatStaticAnalyzer &context) const;
 
@@ -88,6 +94,8 @@ public:
     virtual int getTypeId() const {
         return 2;
     }
+
+    virtual void processCallInput(unsigned int inputId, SatStaticAnalyzer &context);
 };
 
 class NMethodCall : public NExpression {
