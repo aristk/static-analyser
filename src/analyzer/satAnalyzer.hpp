@@ -43,11 +43,15 @@ public:
     }
 
     void addRhsInputUsage(NIdentifier nIdentifier) {
-        inputRhsUsages[nIdentifier.name].push_back(nIdentifier);
+        if (inputRhsUsages.count(nIdentifier.name) == 0) {
+            inputRhsUsages[nIdentifier.name].push_back(nIdentifier);
+        }
     }
 
     void addLhsInputUsage(NIdentifier nIdentifier) {
-        inputLhsUsages[nIdentifier.name].push_back(nIdentifier);
+        if (inputLhsUsages.count(nIdentifier.name) == 0) {
+            inputLhsUsages[nIdentifier.name].push_back(nIdentifier);
+        }
     }
 
 
@@ -162,5 +166,5 @@ public:
 
     unsigned int getRhsSatVar(const NIdentifier &lhs);
 
-    unsigned int getLhsSatVar(const NIdentifier &lhs);
+    unsigned int getLhsSatVar(const NIdentifier &rhs);
 };

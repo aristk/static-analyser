@@ -227,6 +227,7 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
 
     // map inputs
     // TODO: check that integer input is not used as struct later
+    // TODO: if input struct is used in call function, it should be added to inputs
     for(int i = 0; i < methodCall.arguments.size(); i++) {
         correspondences.emplace(originalInputs[i], methodCall.arguments[i]);
         // TODO: check that number of inputs is the same
@@ -264,24 +265,30 @@ NExpression * SatStaticAnalyzer::mapToInput(const NIdentifier &nIdentifier) {
 }
 
 unsigned int SatStaticAnalyzer::getRhsSatVar(const NIdentifier &lhs) {
-    SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
-    string name = lhs.name;
+    // update usages only in case of function declaration
+    if (!callStack.empty()) {
+        SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
+        string name = lhs.name;
 
-    if (currentFunction->isInput(name)) {
-        currentFunction->addRhsInputUsage(lhs);
+        if (currentFunction->isInput(name)) {
+            currentFunction->addRhsInputUsage(lhs);
+        }
     }
 
     return getIdentifierVariables(lhs);
 }
 
-unsigned int SatStaticAnalyzer::getLhsSatVar(const NIdentifier &lhs) {
-    SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
-    string name = lhs.name;
+unsigned int SatStaticAnalyzer::getLhsSatVar(const NIdentifier &rhs) {
+    // update usages only in case of function declaration
+    if (!callStack.empty()) {
+        SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
+        string name = rhs.name;
 
-    if (currentFunction->isInput(name)) {
-        currentFunction->addLhsInputUsage(lhs);
+        if (currentFunction->isInput(name)) {
+            currentFunction->addLhsInputUsage(rhs);
+        }
     }
 
-    return addNewVariable(lhs);
+    return addNewVariable(rhs);
 }
 
