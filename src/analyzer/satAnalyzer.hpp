@@ -96,10 +96,25 @@ class SatStaticAnalyzer : public StaticAnalyzer {
 
     string currentFunctionName;
 
-    unsigned int getIdentifierVariables(const NIdentifier &nIdentifier);
-    unsigned int addNewVariable(const NIdentifier &nIdentifier);
-
     vector<pair<int, unsigned int> > answers;
+
+    unsigned int addNewSatVariable(const NIdentifier &nIdentifier);
+    unsigned int getSatVariable(const NIdentifier &nIdentifier);
+
+    const FullVariableName getFullVariableName(const NIdentifier &lhs);
+    FullVariableNameOccurrence getFullVariableNameOccurrence(const NIdentifier &nIdentifier);
+
+    const unsigned int getOccurrences(const FullVariableName &variableName) const {
+        unsigned int answer = 0;
+        if (variableOccurrences.count(variableName) > 0) {
+            answer = variableOccurrences.at(variableName);
+        }
+        return answer;
+    }
+    void setOccurrences(const FullVariableName &variableName, unsigned int occurrence) {
+        variableOccurrences[variableName] = occurrence;
+    }
+
 public:
     SatStaticAnalyzer() : solver(new SATSolver), variables(), variableOccurrences(), callStack(),
                           functions(), currentFunctionName(), answers() {
@@ -141,20 +156,5 @@ public:
     virtual bool isConstant(int &returnValue, const NIdentifier &nIdentifier);
 
     virtual ~SatStaticAnalyzer() {}
-
-    const unsigned int getOccurrences(const FullVariableName &variableName) const {
-        unsigned int answer = 0;
-        if (variableOccurrences.count(variableName) > 0) {
-            answer = variableOccurrences.at(variableName);
-        }
-        return answer;
-    }
-    void setOccurrences(const FullVariableName &variableName, unsigned int occurrence) {
-        variableOccurrences[variableName] = occurrence;
-    }
-
-    const FullVariableName NIdentifierToFullName(const NIdentifier &lhs);
-
-    FullVariableNameOccurrence getFullVariableNameOccurrence(const NIdentifier &nIdentifier);
 
 };

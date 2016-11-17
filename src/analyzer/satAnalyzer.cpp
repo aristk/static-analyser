@@ -12,20 +12,19 @@ void SatStaticAnalyzer::addClauses(const NBlock &root) {
     }
 }
 
-unsigned int SatStaticAnalyzer::addNewVariable(const NIdentifier &nIdentifier) {
+unsigned int SatStaticAnalyzer::addNewSatVariable(const NIdentifier &nIdentifier) {
 
     unsigned int nVars = solver->nVars();
 
-    // TODO: if addNewVariable called from getIdentifierVariables then getFullVariableNameOccurrence called twice
     FullVariableNameOccurrence key = getFullVariableNameOccurrence(nIdentifier);
 
     // in case of dummy variables, do not map them
-    if (get<1>(key) != "") {
+    if (key.first.first != "") {
         if (variables.count(key) > 0) {
             // if variable that going to be assigned was used previously, then we need to create new 
             // variable (previous incarnations of variable could be used, so we should not erase them)
-            get<3>(key)++;
-            FullVariableName fullVariableName = NIdentifierToFullName(nIdentifier);
+            key.second++;
+            FullVariableName fullVariableName = getFullVariableName(nIdentifier);
             unsigned int occurrence = getOccurrences(fullVariableName);
             setOccurrences(fullVariableName, occurrence+1);
         }
@@ -35,7 +34,7 @@ unsigned int SatStaticAnalyzer::addNewVariable(const NIdentifier &nIdentifier) {
     return nVars;
 }
 
-const FullVariableName SatStaticAnalyzer::NIdentifierToFullName(const NIdentifier &lhs) {
+const FullVariableName SatStaticAnalyzer::getFullVariableName(const NIdentifier &lhs) {
     string variableName = lhs.name;
 
     if(!callStack.empty()) {
@@ -48,29 +47,29 @@ const FullVariableName SatStaticAnalyzer::NIdentifierToFullName(const NIdentifie
         }
     }
 
-    return FullVariableName(currentFunctionName, variableName, lhs.field);
+    return FullVariableName(variableName, lhs.field);
 }
 
 FullVariableNameOccurrence SatStaticAnalyzer::getFullVariableNameOccurrence(const NIdentifier &nIdentifier) {
 
-    FullVariableName fullVariableName = NIdentifierToFullName(nIdentifier);
+    FullVariableName fullVariableName = getFullVariableName(nIdentifier);
 
     unsigned int occurrence = getOccurrences(fullVariableName);
 
     FullVariableNameOccurrence key =
-            make_tuple(get<0>(fullVariableName), get<1>(fullVariableName), get<2>(fullVariableName), occurrence);
+            make_pair(fullVariableName, occurrence);
 
     return key;
 }
 
 unsigned int
-SatStaticAnalyzer::getIdentifierVariables(const NIdentifier &nIdentifier) {
+SatStaticAnalyzer::getSatVariable(const NIdentifier &nIdentifier) {
 
     FullVariableNameOccurrence key = getFullVariableNameOccurrence(nIdentifier);
 
     // if variables was not defined, define them
     if (variables.count(key) == 0) {
-        addNewVariable(nIdentifier);
+        addNewSatVariable(nIdentifier);
     }
     return variables.at(key);
 }
@@ -79,8 +78,8 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rh
 
     const int variableCount = 2;
     vector<unsigned int> nVars(variableCount);
-    nVars[0] = addNewVariable(lhs);
-    nVars[1] = getIdentifierVariables(rhs);
+    nVars[0] = addNewSatVariable(lhs);
+    nVars[1] = getSatVariable(rhs);
     vector<unsigned int> clause(variableCount);
 
     for (int i = 0; i < numOfBitsPerInt; i++) {
@@ -95,7 +94,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NInteger &nInte
 
     int value = NInteger::intMapping[nInteger.value];
 
-    unsigned int nVars = addNewVariable(lhs);
+    unsigned int nVars = addNewSatVariable(lhs);
 
     vector<Lit> clause(1);
 
@@ -115,12 +114,12 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator
 
     // add new variables to handle output of NBinaryOperator
     unsigned int newVarLast = solver->nVars();
-    nVars[3] = addNewVariable(lhs);
+    nVars[3] = addNewSatVariable(lhs);
 
     // create dummy variables for computations
-    nVars[0] = addNewVariable(NIdentifier("", "", 0));
-    nVars[1] = getIdentifierVariables(nBinaryOperator.lhs);
-    nVars[2] = getIdentifierVariables(nBinaryOperator.rhs);
+    nVars[0] = addNewSatVariable(NIdentifier("", "", 0));
+    nVars[1] = getSatVariable(nBinaryOperator.lhs);
+    nVars[2] = getSatVariable(nBinaryOperator.rhs);
 
     vector<unsigned int> clause(variableCount);
     vector<Lit> binClause(2);
@@ -180,7 +179,7 @@ SatStaticAnalyzer::isConstant(int &returnValue, const NIdentifier &key) {
     if (!callStack.empty())
         return false;
 
-    const unsigned int lowerBitVariable = getIdentifierVariables(key);
+    const unsigned int lowerBitVariable = getSatVariable(key);
 
     lbool result = solver->solve();
 
