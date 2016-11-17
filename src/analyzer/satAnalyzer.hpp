@@ -104,8 +104,8 @@ class SatStaticAnalyzer : public StaticAnalyzer {
 
     vector<pair<int, unsigned int> > answers;
 
-    unsigned int addNewSatVariable(const NIdentifier &nIdentifier);
-    unsigned int getSatVariable(const NIdentifier &nIdentifier);
+    unsigned int addNewSatVariable(FullVariableNameOccurrence &nIdentifier);
+    unsigned int getSatVariable(FullVariableNameOccurrence &nIdentifier);
 
     const FullVariableName getFullVariableName(const NIdentifier &lhs);
     FullVariableNameOccurrence getFullVariableNameOccurrence(const NIdentifier &nIdentifier);
@@ -160,7 +160,7 @@ public:
 
     void addTrueOutput(const NIdentifier &variableName);
 
-    virtual bool isConstant(int &returnValue, const NIdentifier &nIdentifier);
+    virtual bool isConstant(int &returnValue, FullVariableNameOccurrence &nIdentifier);
 
     virtual ~SatStaticAnalyzer() {}
 };
