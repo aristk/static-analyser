@@ -34,14 +34,14 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 include_directories(${cryptominisat5_SOURCE_DIR}/src)
 
-set(SOURCE_FILES analyzer/satAnalyzer.cpp analyzer/node.cpp core.cpp ${FlexOutput} ${BisonOutput})
+set(SOURCE_FILES analyzer/satAnalyzer.cpp analyzer/node.cpp analyzer/variableName.cpp core.cpp ${FlexOutput} ${BisonOutput})
 
 set(Z3_FOUND 0)
 
 if (Z3_FOUND)
     include_directories(${Z3_SOURCE_DIR}/src/api)
     set(LIBS ${LIBS} libz3)
-    set(SOURCE_FILES ${SOURCE_FILES} analyzer/smtAnalyzer.cpp)
+    set(SOURCE_FILES ${SOURCE_FILES} analyzer/smtAnalyzer.cpp )
 endif()
 
 add_library(core ${SOURCE_FILES})

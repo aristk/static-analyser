@@ -28,10 +28,24 @@ unsigned int SatStaticAnalyzer::addNewSatVariable(const NIdentifier &nIdentifier
             unsigned int occurrence = getOccurrences(fullVariableName);
             setOccurrences(fullVariableName, occurrence+1);
         }
+
         variables[key] = nVars;
     }
     solver->new_vars(numOfBitsPerInt);
     return nVars;
+}
+
+unsigned int
+SatStaticAnalyzer::getSatVariable(const NIdentifier &nIdentifier) {
+
+    FullVariableNameOccurrence key = getFullVariableNameOccurrence(nIdentifier);
+
+    // if variables was not defined, define them
+    if (variables.count(key) == 0) {
+        addNewSatVariable(nIdentifier);
+    }
+
+    return variables.at(key);
 }
 
 const FullVariableName SatStaticAnalyzer::getFullVariableName(const NIdentifier &lhs) {
@@ -62,24 +76,15 @@ FullVariableNameOccurrence SatStaticAnalyzer::getFullVariableNameOccurrence(cons
     return key;
 }
 
-unsigned int
-SatStaticAnalyzer::getSatVariable(const NIdentifier &nIdentifier) {
-
-    FullVariableNameOccurrence key = getFullVariableNameOccurrence(nIdentifier);
-
-    // if variables was not defined, define them
-    if (variables.count(key) == 0) {
-        addNewSatVariable(nIdentifier);
-    }
-    return variables.at(key);
-}
-
 void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rhs) {
 
     const int variableCount = 2;
     vector<unsigned int> nVars(variableCount);
-    nVars[0] = addNewSatVariable(lhs);
+    // it is important to first get old variable and then introduce a new variable
+    // Usecase x = x
     nVars[1] = getSatVariable(rhs);
+    nVars[0] = addNewSatVariable(lhs);
+
     vector<unsigned int> clause(variableCount);
 
     for (int i = 0; i < numOfBitsPerInt; i++) {
@@ -87,6 +92,12 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rh
             clause[j] = nVars[j] + i;
         }
         solver->add_xor_clause(clause, false);
+    }
+
+    if (doDebug == 1) {
+        cout << getFullVariableNameOccurrence(lhs);
+        cout << " = " << getFullVariableNameOccurrence(rhs);
+        cout << endl;
     }
 }
 
@@ -103,6 +114,12 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NInteger &nInte
         solver->add_clause(clause);
         value >>= 1;
     }
+
+    if (doDebug == 1) {
+        cout << getFullVariableNameOccurrence(lhs);
+        cout << " = " << nInteger.value;
+        cout << endl;
+    }
 }
 
 // TODO: need tests
@@ -112,14 +129,14 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator
     const int variableCount = 3;
     vector<unsigned int> nVars(variableCount+1);
 
-    // add new variables to handle output of NBinaryOperator
-    unsigned int newVarLast = solver->nVars();
-    nVars[3] = addNewSatVariable(lhs);
-
     // create dummy variables for computations
     nVars[0] = addNewSatVariable(NIdentifier("", "", 0));
     nVars[1] = getSatVariable(nBinaryOperator.lhs);
     nVars[2] = getSatVariable(nBinaryOperator.rhs);
+
+    // add new variables to handle output of NBinaryOperator
+    unsigned int newVarLast = solver->nVars();
+    nVars[3] = addNewSatVariable(lhs);
 
     vector<unsigned int> clause(variableCount);
     vector<Lit> binClause(2);
@@ -160,6 +177,13 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator
     }
 
     updateAnswers("binOp", lhs);
+
+    if (doDebug == 1) {
+        cout << getFullVariableNameOccurrence(lhs);
+        cout << " = " << getFullVariableNameOccurrence(nBinaryOperator.lhs);
+        cout << " == " << getFullVariableNameOccurrence(nBinaryOperator.rhs);
+        cout << endl;
+    }
 }
 
 void SatStaticAnalyzer::updateAnswers(const string &opName, const NIdentifier &lhs) {
@@ -223,7 +247,6 @@ SatStaticAnalyzer::isConstant(int &returnValue, const NIdentifier &key) {
 void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier &functionName) {
     unique_ptr<FunctionDeclaration> Function(new FunctionDeclaration);
 
-    vector<string> inputsNames(inputs.size());
     for(auto i : inputs) {
         // TODO: checks that structures are not allowed should be part of the parser
         if (i->field != "")  {
@@ -234,8 +257,15 @@ void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier 
 
     string name = functionName.printName();
 
-    functions.emplace(name, move(Function));
     currentFunctionName = name;
+    if(doDebug == 1) {
+        cout << "func " << name << "(";
+        for(int i = 0; i < inputs.size(); i++) {
+            cout << Function->getInput(i) << ", ";
+        }
+        cout << ")" << endl;
+    }
+    functions.emplace(name, move(Function));
 }
 
 void SatStaticAnalyzer::addTrueOutput(const NIdentifier &variableName){
@@ -249,6 +279,7 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
 
     string calledFunctionName = methodCall.id.name;
 
+    // disallow recursive calls
     list<string>::iterator stackIter = find(callStack.begin(), callStack.end(), calledFunctionName);
     if (stackIter != callStack.end()) {
         throw recursiveCall(calledFunctionName);

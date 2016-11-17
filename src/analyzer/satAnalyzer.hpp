@@ -17,6 +17,8 @@ class FunctionDeclaration {
     unordered_set<string> inputsMap;
     vector<string> inputs;
     // map to keep correspondence between original arguments and call arguments for later substitution
+    // since recursive calls are not allowed at all, it is save to store just one copy of mapping between function
+    // invocation inputs and function declaration inputs
     map<string, string> callInputMap;
     NIdentifier output;
     unique_ptr<NBlock> body;
@@ -85,9 +87,11 @@ class SatStaticAnalyzer : public StaticAnalyzer {
     // how many bits we need per integer (depends on int count from parser)
     unsigned int numOfBitsPerInt;
 
+    int doDebug = 0;
+
     std::unique_ptr<SATSolver> solver;
 
-    // relation of function, struct, field (NIdentifier) to Boolean variables
+    // relation of struct, field (NIdentifier) to Boolean variables
     map<FullVariableNameOccurrence, unsigned int> variables;
     map<FullVariableName, unsigned int> variableOccurrences;
 
@@ -159,5 +163,4 @@ public:
     virtual bool isConstant(int &returnValue, const NIdentifier &nIdentifier);
 
     virtual ~SatStaticAnalyzer() {}
-
 };

@@ -1,0 +1,36 @@
+func foo(a1, b1) {
+ a1.x = b1
+}
+
+func check(a2, b2) {
+ i = a2.x
+ j = b2.x
+ k = i == j
+ return k
+}
+
+func check1(a, b) {
+ foo(a3, 2)
+ foo(b3, 1)
+ x = check(a3, b3) //x is always 0
+ return x
+}
+
+func bar(a3, b3) {
+ x = check1(a3, b3) //x is always 0
+ ay = a3.y
+ by = b3.y
+ foo(a3, ay)
+ foo(b3, by)
+ y = check(a3, b3)
+ z = check(a3, a3) //x is always 1
+ return y
+}
+
+func test() {
+ x = a4.y
+ b4.y = x
+ x = bar(a4, b4) //x is always 1
+ b4.y = 2
+ y = bar(a4, b4)
+}
