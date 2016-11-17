@@ -14,6 +14,7 @@ void SatStaticAnalyzer::addClauses(const NBlock &root) {
 
 unsigned int SatStaticAnalyzer::addNewSatVariable(const NIdentifier &nIdentifier) {
 
+    // number of used variables
     unsigned int nVars = solver->nVars();
 
     FullVariableNameOccurrence key = getFullVariableNameOccurrence(nIdentifier);
@@ -24,7 +25,7 @@ unsigned int SatStaticAnalyzer::addNewSatVariable(const NIdentifier &nIdentifier
             // if variable that going to be assigned was used previously, then we need to create new 
             // variable (previous incarnations of variable could be used, so we should not erase them)
             key.second++;
-            FullVariableName fullVariableName = getFullVariableName(nIdentifier);
+            FullVariableName fullVariableName = key.first;
             unsigned int occurrence = getOccurrences(fullVariableName);
             setOccurrences(fullVariableName, occurrence+1);
         }
@@ -70,8 +71,7 @@ FullVariableNameOccurrence SatStaticAnalyzer::getFullVariableNameOccurrence(cons
 
     unsigned int occurrence = getOccurrences(fullVariableName);
 
-    FullVariableNameOccurrence key =
-            make_pair(fullVariableName, occurrence);
+    FullVariableNameOccurrence key = make_pair(fullVariableName, occurrence);
 
     return key;
 }
@@ -95,7 +95,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rh
     }
 
     if (doDebug == 1) {
-        cout << getFullVariableNameOccurrence(lhs);
+        cout << "\t" << getFullVariableNameOccurrence(lhs);
         cout << " = " << getFullVariableNameOccurrence(rhs);
         cout << endl;
     }
@@ -116,7 +116,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NInteger &nInte
     }
 
     if (doDebug == 1) {
-        cout << getFullVariableNameOccurrence(lhs);
+        cout << "\t" << getFullVariableNameOccurrence(lhs);
         cout << " = " << nInteger.value;
         cout << endl;
     }
@@ -179,7 +179,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator
     updateAnswers("binOp", lhs);
 
     if (doDebug == 1) {
-        cout << getFullVariableNameOccurrence(lhs);
+        cout << "\t" << getFullVariableNameOccurrence(lhs);
         cout << " = " << getFullVariableNameOccurrence(nBinaryOperator.lhs);
         cout << " == " << getFullVariableNameOccurrence(nBinaryOperator.rhs);
         cout << endl;
@@ -260,8 +260,15 @@ void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier 
     currentFunctionName = name;
     if(doDebug == 1) {
         cout << "func " << name << "(";
-        for(int i = 0; i < inputs.size(); i++) {
-            cout << Function->getInput(i) << ", ";
+        vector<string> v = Function->getInputs();
+        bool first = true;
+        for (auto i: v) {
+            if (first) {
+                first = false;
+            } else {
+                cout << ", ";
+            }
+            cout << i;
         }
         cout << ")" << endl;
     }
@@ -297,7 +304,7 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
     // map inputs
     // TODO: check that integer input is not used as struct later
     // TODO: if input struct is used in call function, it should be added to inputs
-    for(int i = 0; i < methodCall.arguments.size(); i++) {
+    for(unsigned int i = 0; i < methodCall.arguments.size(); i++) {
         methodCall.arguments[i]->processCallInput(i, *this);
     }
 

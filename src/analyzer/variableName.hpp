@@ -6,7 +6,7 @@ using namespace std;
 
 typedef pair<string, string> FullVariableName;
 
-typedef pair<FullVariableName, int> FullVariableNameOccurrence;
+typedef pair<FullVariableName, unsigned int> FullVariableNameOccurrence;
 
 std::ostream& operator<<(std::ostream& os, const FullVariableName& obj);
 

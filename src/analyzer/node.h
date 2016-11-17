@@ -72,9 +72,9 @@ class NIdentifier : public NExpression {
 public:
     std::string name;
     std::string field;
-    int lineNumber;
+    unsigned int lineNumber;
     NIdentifier(const std::string& name, int lineNumber) : name(name), lineNumber(lineNumber) { }
-    NIdentifier(const std::string& name, const std::string& field, int lineNumber) :
+    NIdentifier(const std::string& name, const std::string& field, unsigned int lineNumber) :
             name(name), field(field), lineNumber(lineNumber) { }
 
     virtual void addClauses(const NIdentifier &nIdentifier, SatStaticAnalyzer &context) const;

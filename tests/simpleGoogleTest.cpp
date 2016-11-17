@@ -15,13 +15,13 @@ TEST(testCore, PositiveTests) {
     string inputFileName;
     vector<pair<int, int> > pattern;
 
-    inputFileName = "test/example.myprog";
+    inputFileName = "test/originalExample.myprog";
     answers = parseAndAnalyze(inputFileName.c_str());
     pattern = {{0, 15}, {1, 21}, {1, 28}};
     ASSERT_THAT(answers,
                 ElementsAreArray(pattern));
 
-    inputFileName = "test/same_name_in_output.myprog";
+    inputFileName = "test/sameNameInOutput.myprog";
     answers = parseAndAnalyze(inputFileName.c_str());
     pattern = {{0, 15}, {0, 20}, {1, 26}, {1, 33}};
     ASSERT_THAT(answers,
@@ -51,11 +51,11 @@ TEST(testCore, PositiveTests) {
 TEST(testCore, NegativeTestsAnalyzerExceptions) {
 
     string inputFileName;
-    inputFileName = "test/field_in_arg.myprog";
+    inputFileName = "test/fieldInArg.myprog";
 
     ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), InputIsAStruct);
 
-    inputFileName = "test/global_var.myprog" ;
+    inputFileName = "test/globalVar.myprog" ;
 
     ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), notNFunctionDeclaration);
 
@@ -63,18 +63,18 @@ TEST(testCore, NegativeTestsAnalyzerExceptions) {
 
     ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), couldNotOpenFile);
 
-    inputFileName = "test/diff_args.myprog" ;
+    inputFileName = "test/diffArgs.myprog" ;
 
     ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), differentNumberOfArgsInFunctionCall);
 
-    inputFileName = "test/recursive_call.myprog" ;
+    inputFileName = "test/recursiveCall.myprog" ;
 
     ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), recursiveCall);
 }
 
 // TODO: looks like crash of parser is due to one instance of it
 TEST(testCore, NegativeTestsParserFails) {
-    string inputFileName = "test/assignment_in_arg.myprog";
+    string inputFileName = "test/assignmentInArg.myprog";
 
     ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), parserError);
 }
