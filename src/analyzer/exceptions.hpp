@@ -77,6 +77,19 @@ class differentNumberOfArgsInFunctionCall: public exception {
     }
 };
 
+
+class recursiveCall: public exception {
+    string output;
+    virtual const char* what() const throw() {
+        return output.c_str();
+    }
+public:
+    recursiveCall(const string& name):
+            output("Function " + name + "called recursively")
+    { }
+
+};
+
 class functionIsNotImplemented: public exception {
     string output;
     virtual const char* what() const throw() {

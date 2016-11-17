@@ -60,6 +60,10 @@ TEST(testCore, NegativeTestsAnalyzerExceptions) {
     inputFileName = "test/diff_args.myprog" ;
 
     ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), differentNumberOfArgsInFunctionCall);
+
+    inputFileName = "test/recursive_call.myprog" ;
+
+    ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), recursiveCall);
 }
 
 // TODO: looks like crash of parser is due to one instance of it

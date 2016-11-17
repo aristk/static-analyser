@@ -105,7 +105,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NInteger &nInte
     }
 }
 
-// TODO: required automatic tests
+// TODO: need tests
 void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator) {
 
     // TODO: check that operands of BinaryOperator could not be integers or structs
@@ -248,7 +248,13 @@ void SatStaticAnalyzer::addTrueOutput(const NIdentifier &variableName){
 void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIdentifier &output) {
 
     string calledFunctionName = methodCall.id.name;
-    callStack.push(calledFunctionName);
+
+    list<string>::iterator stackIter = find(callStack.begin(), callStack.end(), calledFunctionName);
+    if (stackIter != callStack.end()) {
+        throw recursiveCall(calledFunctionName);
+    }
+
+    callStack.push_back(calledFunctionName);
     FunctionDeclaration *calledFunction = getFunction(calledFunctionName);
 
     vector<string> originalInputs = calledFunction->getInputs();
@@ -264,17 +270,14 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
         methodCall.arguments[i]->processCallInput(i, *this);
     }
 
-    // since we cannot remove variables and clauses, we need to store transitions separately (as new lhs variables)
-
     // TODO: important open question: is how to handle multiple function calls without inlining?
 
-    // distinguish normal function and called function with integer at beginning
     // inline function body
     calledFunction->getBody()->genCheck(*this);
 
+    // return back to parent function
     calledFunction->clearCallInputMap();
-
-    callStack.pop();
+    callStack.pop_back();
 
     // map and check true output
     if (output.name != "") {

@@ -42,24 +42,8 @@ void NMethodCall::addClauses(const NIdentifier &key, SatStaticAnalyzer &context)
     context.mapMethodCall(*this, key);
 }
 
-//TODO: somehow merge into one call
 // key = this
 void NInteger::addClauses(const NIdentifier &lhs, SatStaticAnalyzer &context) const {
-    context.addClauses(lhs, *this);
-}
-
-void NInteger::processCallInput(unsigned int inputId, SatStaticAnalyzer &context) {
-    const string callFunctionName = context.getCurrentCall();
-
-    FunctionDeclaration *calledFunction = context.getFunction(callFunctionName);
-
-    string inputName = calledFunction->getInput(inputId);
-
-    NIdentifier lhs(to_string(value) + inputName, 0);
-
-    // we to map all inputs also that have integer values, for that we need a new name
-    calledFunction->mapCallInput(inputName, lhs.name);
-
     context.addClauses(lhs, *this);
 }
 
@@ -83,3 +67,17 @@ void NIdentifier::processCallInput(unsigned int inputId, SatStaticAnalyzer &cont
     calledFunction->mapCallInput(inputName, name);
 }
 
+void NInteger::processCallInput(unsigned int inputId, SatStaticAnalyzer &context) {
+    const string callFunctionName = context.getCurrentCall();
+
+    FunctionDeclaration *calledFunction = context.getFunction(callFunctionName);
+
+    string inputName = calledFunction->getInput(inputId);
+
+    NIdentifier lhs(to_string(value) + inputName, 0);
+
+    // we to map all inputs also that have integer values, for that we need a new name
+    calledFunction->mapCallInput(inputName, lhs.name);
+
+    context.addClauses(lhs, *this);
+}

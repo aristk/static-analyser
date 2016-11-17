@@ -1,0 +1,4 @@
+func foo(a, b) {
+ a.x = b
+ foo(a, b)
+}

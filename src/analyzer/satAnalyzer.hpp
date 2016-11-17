@@ -3,8 +3,9 @@
 #include <unordered_set>
 #include <vector>
 #include <map>
-#include <stack>
+#include <list>
 #include <math.h>
+#include <cassert>
 
 class NBlock;
 using namespace CMSat;
@@ -90,7 +91,8 @@ class SatStaticAnalyzer : public StaticAnalyzer {
     map<FullVariableNameOccurrence, unsigned int> variables;
     map<FullVariableName, unsigned int> variableOccurrences;
 
-    stack<string> callStack;
+    // stack do not support iterators that we need for requrences search
+    list<string> callStack;
 
     map<string, std::unique_ptr<FunctionDeclaration> > functions;
 
@@ -141,7 +143,8 @@ public:
     void updateAnswers(const string &opName, const NIdentifier &lhs);
 
     const string getCurrentCall() {
-        return callStack.top();
+        assert(!callStack.empty());
+        return callStack.back();
     }
 
     FunctionDeclaration *getFunction(const string &name) {
