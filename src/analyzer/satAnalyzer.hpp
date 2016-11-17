@@ -10,15 +10,17 @@ class NBlock;
 using namespace CMSat;
 using namespace std;
 
-class SatFunctionDeclaration {
+class FunctionDeclaration {
     // std::unordered_set allow fast check that string is an input
+    // TODO: best solution is to use boost::bimap here
     unordered_set<string> inputsMap;
     vector<string> inputs;
+    // map to keep correspondence between original arguments and call arguments for later substitution
     map<string, string> callInputMap;
     NIdentifier output;
     unique_ptr<NBlock> body;
 public:
-    SatFunctionDeclaration(): inputs(), callInputMap(), output("", "", 0), body() {}
+    FunctionDeclaration(): inputs(), callInputMap(), output("", "", 0), body() {}
 
     void addInput(const string &input) {
         if (isInput(input)) {
@@ -90,9 +92,7 @@ class SatStaticAnalyzer : public StaticAnalyzer {
 
     stack<string> callStack;
 
-    map<string, std::unique_ptr<SatFunctionDeclaration> > functions;
-
-    map<string, NExpression* > correspondences;
+    map<string, std::unique_ptr<FunctionDeclaration> > functions;
 
     string currentFunctionName;
 
@@ -102,38 +102,10 @@ class SatStaticAnalyzer : public StaticAnalyzer {
     vector<pair<int, unsigned int> > answers;
 public:
     SatStaticAnalyzer() : solver(new SATSolver), variables(), variableOccurrences(), callStack(),
-                          functions(), correspondences(), currentFunctionName(), answers() {
+                          functions(), currentFunctionName(), answers() {
         // we need at least one bit for boolean variable
         numOfBitsPerInt = (unsigned int) ceil(log2(max((unsigned int) 2, NInteger::differentIntCount)));
     }
-
-    virtual void addClauses(const NIdentifier &lhs, const NInteger &nInteger);
-    virtual void addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator);
-    virtual void addClauses(const NIdentifier &lhs, const NIdentifier &rhs);
-
-    vector<pair<int, unsigned int> > getAnswers() {
-        return answers;
-    };
-
-    const string getCurrentCall() {
-        return callStack.top();
-    }
-
-    const unsigned int getOccurrences(const FullVariableName &variableName) const {
-        unsigned int answer = 0;
-        if (variableOccurrences.count(variableName) > 0) {
-            answer = variableOccurrences.at(variableName);
-        }
-        return answer;
-    }
-
-    void setOccurrences(const FullVariableName &variableName, unsigned int occurence) {
-        variableOccurrences[variableName] = occurence;
-    }
-
-    const FullVariableName NIdentifierToFullName(const NIdentifier &lhs);
-
-    void mapMethodCall(const NMethodCall &methodCall, const NIdentifier &output);
 
     void addInputs(const VariableList &inputs, const NIdentifier &functionName);
 
@@ -141,9 +113,23 @@ public:
         functions[functionName]->addBody(block);
     }
 
-    void generateCheck(const NBlock& root);
+    virtual void addClauses(const NBlock &root);
+    virtual void addClauses(const NIdentifier &lhs, const NInteger &nInteger);
+    virtual void addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator);
+    virtual void addClauses(const NIdentifier &lhs, const NIdentifier &rhs);
 
-    SatFunctionDeclaration *getFunction(const string &name) {
+    void mapMethodCall(const NMethodCall &methodCall, const NIdentifier &output);
+
+    vector<pair<int, unsigned int> > getAnswers() {
+        return answers;
+    };
+    void updateAnswers(const string &opName, const NIdentifier &lhs);
+
+    const string getCurrentCall() {
+        return callStack.top();
+    }
+
+    FunctionDeclaration *getFunction(const string &name) {
         if (functions.count(name) == 0) {
             throw FunctionIsNotDefined();
         }
@@ -156,8 +142,19 @@ public:
 
     virtual ~SatStaticAnalyzer() {}
 
-    FullVariableNameOccurrence getFullVariableNameOccurrence(const NIdentifier &nIdentifier);
+    const unsigned int getOccurrences(const FullVariableName &variableName) const {
+        unsigned int answer = 0;
+        if (variableOccurrences.count(variableName) > 0) {
+            answer = variableOccurrences.at(variableName);
+        }
+        return answer;
+    }
+    void setOccurrences(const FullVariableName &variableName, unsigned int occurrence) {
+        variableOccurrences[variableName] = occurrence;
+    }
 
-    void updateAnswers(const string &opName, const NIdentifier &lhs);
+    const FullVariableName NIdentifierToFullName(const NIdentifier &lhs);
+
+    FullVariableNameOccurrence getFullVariableNameOccurrence(const NIdentifier &nIdentifier);
 
 };

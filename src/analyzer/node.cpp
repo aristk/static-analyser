@@ -51,7 +51,7 @@ void NInteger::addClauses(const NIdentifier &lhs, SatStaticAnalyzer &context) co
 void NInteger::processCallInput(unsigned int inputId, SatStaticAnalyzer &context) {
     const string callFunctionName = context.getCurrentCall();
 
-    SatFunctionDeclaration *calledFunction = context.getFunction(callFunctionName);
+    FunctionDeclaration *calledFunction = context.getFunction(callFunctionName);
 
     string inputName = calledFunction->getInput(inputId);
 
@@ -76,7 +76,7 @@ void NIdentifier::addClauses(const NIdentifier &lhs, SatStaticAnalyzer &context)
 void NIdentifier::processCallInput(unsigned int inputId, SatStaticAnalyzer &context) {
     const string callFunctionName = context.getCurrentCall();
 
-    SatFunctionDeclaration *calledFunction = context.getFunction(callFunctionName);
+    FunctionDeclaration *calledFunction = context.getFunction(callFunctionName);
 
     string inputName = calledFunction->getInput(inputId);
 

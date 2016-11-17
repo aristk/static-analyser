@@ -30,7 +30,7 @@ vector<pair<int, unsigned int> > parseAndAnalyze(const char *fileName) {
         throw isParserCrashed();
     }
     unique_ptr<SatStaticAnalyzer> analyzer(new SatStaticAnalyzer());
-    analyzer->generateCheck(*programBlock);
+    analyzer->addClauses(*programBlock);
     return analyzer->getAnswers();
 };
 

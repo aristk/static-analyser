@@ -2,7 +2,7 @@
 #include "analyzer/node.h"
 #include "satAnalyzer.hpp"
 
-void SatStaticAnalyzer::generateCheck(const NBlock &root) {
+void SatStaticAnalyzer::addClauses(const NBlock &root) {
     for(auto i : root.statements) {
         if (!(i->isFunctionDeclaration())) {
             // TODO: add to the parser check that only NFunctionDeclaration could be here
@@ -40,7 +40,7 @@ const FullVariableName SatStaticAnalyzer::NIdentifierToFullName(const NIdentifie
 
     if(!callStack.empty()) {
         string calledFunctionName = this->getCurrentCall();
-        SatFunctionDeclaration *currentFunction = getFunction(calledFunctionName);
+        FunctionDeclaration *currentFunction = getFunction(calledFunctionName);
 
         string newVariableName = currentFunction->getCallArgument(variableName);
         if (newVariableName != "") {
@@ -222,7 +222,7 @@ SatStaticAnalyzer::isConstant(int &returnValue, const NIdentifier &key) {
 }
 
 void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier &functionName) {
-    unique_ptr<SatFunctionDeclaration> Function(new SatFunctionDeclaration);
+    unique_ptr<FunctionDeclaration> Function(new FunctionDeclaration);
 
     vector<string> inputsNames(inputs.size());
     for(auto i : inputs) {
@@ -240,7 +240,7 @@ void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier 
 }
 
 void SatStaticAnalyzer::addTrueOutput(const NIdentifier &variableName){
-    SatFunctionDeclaration *currentFunction = getFunction(currentFunctionName);
+    FunctionDeclaration *currentFunction = getFunction(currentFunctionName);
 
     currentFunction->addTrueOutput(variableName);
 }
@@ -250,7 +250,7 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
 
     string calledFunctionName = methodCall.id.name;
     callStack.push(calledFunctionName);
-    SatFunctionDeclaration *calledFunction = getFunction(calledFunctionName);
+    FunctionDeclaration *calledFunction = getFunction(calledFunctionName);
 
     vector<string> originalInputs = calledFunction->getInputs();
 
@@ -262,7 +262,6 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
     // TODO: check that integer input is not used as struct later
     // TODO: if input struct is used in call function, it should be added to inputs
     for(int i = 0; i < methodCall.arguments.size(); i++) {
-        correspondences.emplace(originalInputs[i], methodCall.arguments[i]);
         methodCall.arguments[i]->processCallInput(i, *this);
     }
 
@@ -274,8 +273,6 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
     // inline function body
     calledFunction->getBody()->genCheck(*this);
 
-    // TODO: could be buggy here: it is more clear way to implement something like "call stack" with correspondences
-    correspondences.clear();
     calledFunction->clearCallInputMap();
 
     callStack.pop();
