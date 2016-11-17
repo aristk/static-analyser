@@ -63,8 +63,17 @@ void NIdentifier::processCallInput(unsigned int inputId, SatStaticAnalyzer &cont
     FunctionDeclaration *calledFunction = context.getFunction(callFunctionName);
 
     string inputName = calledFunction->getInput(inputId);
+    string newName = name;
+    string parentFunctionName = context.getParentCall();
+    if (parentFunctionName != "") {
+        FunctionDeclaration *parentFunction = context.getFunction(parentFunctionName);
 
-    calledFunction->mapCallInput(inputName, name);
+        newName = parentFunction->getCallArgument(name);
+        if (newName == "")
+            newName = name;
+    }
+
+    calledFunction->mapCallInput(inputName, newName);
 }
 
 void NInteger::processCallInput(unsigned int inputId, SatStaticAnalyzer &context) {

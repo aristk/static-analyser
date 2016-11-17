@@ -151,6 +151,15 @@ public:
         return callStack.back();
     }
 
+    const string getParentCall() {
+        list<string>::reverse_iterator rit=callStack.rbegin();
+        ++rit;
+        if(rit != callStack.rend())
+            return *rit;
+        else
+            return "";
+    }
+
     FunctionDeclaration *getFunction(const string &name) {
         if (functions.count(name) == 0) {
             throw FunctionIsNotDefined();

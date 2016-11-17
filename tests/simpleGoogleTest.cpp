@@ -15,6 +15,12 @@ TEST(testCore, PositiveTests) {
     string inputFileName;
     vector<pair<int, int> > pattern;
 
+    inputFileName = "test/diffNamesExample.myprog";
+    answers = parseAndAnalyze(inputFileName.c_str());
+    pattern = {{0, 19}, {1, 25}, {1, 32}};
+    ASSERT_THAT(answers,
+                ElementsAreArray(pattern));
+
     inputFileName = "test/originalExample.myprog";
     answers = parseAndAnalyze(inputFileName.c_str());
     pattern = {{0, 15}, {1, 21}, {1, 28}};

@@ -12,12 +12,11 @@ func check(a2, b2) {
 func check1(a, b) {
  foo(a, 2)
  foo(b, 1)
- x = check(a, b) //x is always 0
- return x
 }
 
 func bar(a3, b3) {
- x = check1(a3, b3) //x is always 0
+ check1(a3, b3)
+ x = check(a3, b3) //x is always 0
  ay = a3.y
  by = b3.y
  foo(a3, ay)

@@ -130,7 +130,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator
     vector<unsigned int> nVars(variableCount+1);
 
     // create dummy variables for computations
-    FullVariableNameOccurrence empty(make_pair("", ""), 0);
+    FullVariableNameOccurrence empty(FullVariableName("", ""), 0);
     nVars[0] = addNewSatVariable(empty);
     FullVariableNameOccurrence keyBinLhs = getFullVariableNameOccurrence(nBinaryOperator.lhs);
     nVars[1] = getSatVariable(keyBinLhs);
@@ -309,7 +309,6 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
 
     // map inputs
     // TODO: check that integer input is not used as struct later
-    // TODO: if input struct is used in call function, it should be added to inputs
     for(unsigned int i = 0; i < methodCall.arguments.size(); i++) {
         methodCall.arguments[i]->processCallInput(i, *this);
     }
