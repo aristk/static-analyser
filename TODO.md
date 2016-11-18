@@ -8,8 +8,8 @@ Parser:
 2.1. add check that function was not defined previously
 
 Language:
-1. Could we have nested function declarations? Assume, no.
-2. Could we have functions with same names? Assume, no
+1. We could not have nested function declarations.
+2. We could not have functions with same names.
 3. Could we use function before its declaration? Assume, no, it is close to
 [C++ way](http://stackoverflow.com/questions/29967202/why-cant-i-define-a-function-inside-another-function).
 4. What is the type of x if we use x.y somewhere in the code? Assume, structure.
@@ -21,12 +21,7 @@ Language:
      ``
      Assume 1. 
 5. We could not have assignments or field of structure as function argument.
-6. Variables names are char or could be strings?
+6. Variables names are strings.
 
 Checks:
 1. Check that function should return a value, if it used in assigning a variable.
-2. Check usage of structure vs INT, see following incorrect example:
-``
-    Z = INT
-    W = Z.V
-``

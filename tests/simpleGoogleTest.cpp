@@ -83,4 +83,8 @@ TEST(testCore, NegativeTestsParserFails) {
     string inputFileName = "test/assignmentInArg.myprog";
 
     ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), parserError);
+
+    inputFileName = "test/integerInBinOp.myprog";
+
+    ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), parserError);
 }

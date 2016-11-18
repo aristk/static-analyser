@@ -19,6 +19,8 @@ return X
 There is no dedicated variable declaration: if variable is not used previously, then it is just newly created. All 
 variables are local and integers. 
 
+It is possible to assign a = 1 even if a.x = 1 previously. Both are just not connected valid names.
+
 Function are [called by value](https://www.codingunit.com/c-tutorial-call-by-value-or-call-by-reference). 
 [Side effect](https://en.wikipedia.org/wiki/Side_effect_(computer_science)) could be obtained only when you modify a 
 field of an argument:

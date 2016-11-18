@@ -15,7 +15,7 @@ class NExpression;
 class NVariableDeclaration;
 class NIdentifier;
 
-// TODO: use shared_ptr for deleting Assignments
+// TODO: use shared_ptr
 typedef std::vector<NStatement*> StatementList;
 typedef std::vector<NExpression*> ExpressionList;
 typedef std::vector<NIdentifier*> VariableList;
@@ -27,7 +27,6 @@ public:
     std::string name() const { return typeid(*this).name(); }
 
     virtual void genCheck(SatStaticAnalyzer &context) const {
-        // TODO: bad practice, should be caught during compilation
         throw functionIsNotImplemented("genCheck", name());
     }
 
@@ -73,7 +72,7 @@ public:
     std::string name;
     std::string field;
     unsigned int lineNumber;
-    NIdentifier(const std::string& name, int lineNumber) : name(name), lineNumber(lineNumber) { }
+    NIdentifier(const std::string& name, unsigned int lineNumber) : name(name), lineNumber(lineNumber) { }
     NIdentifier(const std::string& name, const std::string& field, unsigned int lineNumber) :
             name(name), field(field), lineNumber(lineNumber) { }
 

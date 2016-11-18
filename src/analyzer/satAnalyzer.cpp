@@ -122,10 +122,8 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NInteger &nInte
     }
 }
 
-// TODO: need tests
 void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator) {
-
-    // TODO: check that operands of BinaryOperator could not be integers or structs
+    // operands of binary operation could not be integers (checked by parser)
     const int variableCount = 3;
     vector<unsigned int> nVars(variableCount+1);
 

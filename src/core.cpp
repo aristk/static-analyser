@@ -1,5 +1,4 @@
 #include <iostream>
-#include <string>
 #include "analyzer/node.h"
 #include "analyzer/satAnalyzer.hpp"
 #include "core.hpp"

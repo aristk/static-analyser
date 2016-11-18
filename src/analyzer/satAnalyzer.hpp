@@ -95,7 +95,7 @@ class SatStaticAnalyzer : public StaticAnalyzer {
     map<FullVariableNameOccurrence, unsigned int> variables;
     map<FullVariableName, unsigned int> variableOccurrences;
 
-    // stack do not support iterators that we need for requrences search
+    // stack do not support iterators that we need for recurrence search
     list<string> callStack;
 
     map<string, std::unique_ptr<FunctionDeclaration> > functions;
