@@ -99,6 +99,11 @@ FullVariableNameOccurrence SatStaticAnalyzer::getFullVariableNameOccurrence(cons
 
     FullVariableName fullVariableName = getFullVariableName(nIdentifier);
 
+    return getFullVariableNameOccurrence(fullVariableName);
+
+}
+
+FullVariableNameOccurrence SatStaticAnalyzer::getFullVariableNameOccurrence(FullVariableName &fullVariableName) const {
     unsigned int occurrence = getOccurrences(fullVariableName);
 
     FullVariableNameOccurrence key = make_pair(fullVariableName, occurrence);
@@ -106,8 +111,7 @@ FullVariableNameOccurrence SatStaticAnalyzer::getFullVariableNameOccurrence(cons
     return key;
 }
 
-void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rhs) {
-
+void SatStaticAnalyzer::addClauses(FullVariableName &lhs, FullVariableName &rhs) {
     const int variableCount = 2;
     vector<unsigned int> nVars(variableCount);
     // it is important to first get old variable and then introduce a new variable
@@ -132,6 +136,13 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rh
         cout << " = " << keyRhs;
         cout << endl;
     }
+}
+
+void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rhs) {
+
+    FullVariableName fullLhs = getFullVariableName(lhs);
+    FullVariableName fullRhs = getFullVariableName(rhs);
+    addClauses(fullLhs, fullRhs);
 }
 
 void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NInteger &nInteger) {

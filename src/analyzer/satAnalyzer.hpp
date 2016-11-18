@@ -40,6 +40,14 @@ public:
         usageOfInputs[name].insert(field);
     }
 
+    unordered_set<string> getUsageOfInputs(string &name) {
+        return usageOfInputs[name];
+    }
+
+    unordered_set<string> getOutputOfInputs(string &name) {
+        return outputOfInputs[name];
+    }
+
     void addLhsUsage(string &name, string &field) {
         outputOfInputs[name].insert(field);
     }
@@ -163,6 +171,8 @@ public:
     }
 
     const string getParentCall() {
+        if (callStack.size() == 1)
+            return currentFunctionName;
         list<string>::reverse_iterator rit=callStack.rbegin();
         ++rit;
         if(rit != callStack.rend())
@@ -187,4 +197,8 @@ public:
     unsigned int getRhsSatVariable(FullVariableNameOccurrence &key);
 
     unsigned int addLhsSatVariable(FullVariableNameOccurrence &key);
+
+    void addClauses(FullVariableName &lhs, FullVariableName &rhs);
+
+    FullVariableNameOccurrence getFullVariableNameOccurrence(FullVariableName &fullVariableName) const;
 };

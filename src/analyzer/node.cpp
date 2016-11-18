@@ -57,6 +57,7 @@ void NIdentifier::addClauses(const NIdentifier &lhs, SatStaticAnalyzer &context)
     context.addClauses(lhs, *this);
 }
 
+// map call arguments
 void NIdentifier::processCallInput(unsigned int inputId, SatStaticAnalyzer &context) {
     const string callFunctionName = context.getCurrentCall();
 
@@ -74,6 +75,32 @@ void NIdentifier::processCallInput(unsigned int inputId, SatStaticAnalyzer &cont
     }
 
     calledFunction->mapCallInput(inputName, newName);
+
+    unordered_set<string> usageOfInput = calledFunction->getUsageOfInputs(inputName);
+
+    for(auto i : usageOfInput) {
+        FullVariableName lhs(callFunctionName, inputName, i);
+        FullVariableName rhs(parentFunctionName, name, i);
+//        context.addClauses(lhs, rhs);
+    }
+}
+
+// map call outputs
+void NIdentifier::processCallOutput(unsigned int inputId, SatStaticAnalyzer &context) {
+    const string callFunctionName = context.getCurrentCall();
+
+    FunctionDeclaration *calledFunction = context.getFunction(callFunctionName);
+
+    string inputName = calledFunction->getInput(inputId);
+    string parentFunctionName = context.getParentCall();
+
+    unordered_set<string> usageOfInput = calledFunction->getOutputOfInputs(inputName);
+
+    for(auto i : usageOfInput) {
+        FullVariableName lhs(parentFunctionName, name, i);
+        FullVariableName rhs(callFunctionName, inputName, i);
+        context.addClauses(lhs, rhs);
+    }
 }
 
 void NInteger::processCallInput(unsigned int inputId, SatStaticAnalyzer &context) {
