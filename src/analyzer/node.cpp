@@ -66,9 +66,9 @@ void NIdentifier::processCallInput(unsigned int inputId, SatStaticAnalyzer &cont
     string inputName = calledFunction->getInput(inputId);
     string newName = name;
     string parentFunctionName = context.getParentCall();
-    if (parentFunctionName != "") {
-        FunctionDeclaration *parentFunction = context.getFunction(parentFunctionName);
+    FunctionDeclaration *parentFunction = context.getFunction(parentFunctionName);
 
+    if (parentFunctionName != "") {
         newName = parentFunction->getCallArgument(name);
         if (newName == "")
             newName = name;
@@ -81,7 +81,12 @@ void NIdentifier::processCallInput(unsigned int inputId, SatStaticAnalyzer &cont
     for(auto i : usageOfInput) {
         FullVariableName lhs(callFunctionName, inputName, i);
         FullVariableName rhs(parentFunctionName, name, i);
-//        context.addClauses(lhs, rhs);
+        context.addClauses(lhs, rhs);
+
+        // update context
+        if ((i != "") && (parentFunctionName == context.getTopOfStack())) {
+            parentFunction->addRhsUsage(inputName, i);
+        }
     }
 }
 
@@ -96,10 +101,17 @@ void NIdentifier::processCallOutput(unsigned int inputId, SatStaticAnalyzer &con
 
     unordered_set<string> usageOfInput = calledFunction->getOutputOfInputs(inputName);
 
+    FunctionDeclaration *parentFunction = context.getFunction(parentFunctionName);
+
     for(auto i : usageOfInput) {
         FullVariableName lhs(parentFunctionName, name, i);
         FullVariableName rhs(callFunctionName, inputName, i);
         context.addClauses(lhs, rhs);
+
+        // update context
+        if ((i != "") && (parentFunctionName == context.getTopOfStack())) {
+            parentFunction->addLhsUsage(name, i);
+        }
     }
 }
 
@@ -110,7 +122,7 @@ void NInteger::processCallInput(unsigned int inputId, SatStaticAnalyzer &context
 
     string inputName = calledFunction->getInput(inputId);
 
-    NIdentifier lhs(to_string(value) + inputName, 0);
+    NIdentifier lhs(inputName, 0);
 
     // we to map all inputs also that have integer values, for that we need a new name
     calledFunction->mapCallInput(inputName, lhs.name);

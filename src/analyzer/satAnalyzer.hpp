@@ -163,11 +163,15 @@ public:
     vector<pair<int, unsigned int> > getAnswers() {
         return answers;
     };
-    void updateAnswers(const string &opName, const NIdentifier &lhs);
+    void updateAnswers(const string &opName, FullVariableName &keyLhs, const NIdentifier &lhs);
 
     const string getCurrentCall() {
         assert(!callStack.empty());
         return callStack.back();
+    }
+
+    const string getTopOfStack() const {
+        return currentFunctionName;
     }
 
     const string getParentCall() {

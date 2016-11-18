@@ -80,7 +80,7 @@ const FullVariableName SatStaticAnalyzer::getFullVariableName(const NIdentifier 
     // side effect is only for fields
     if(!callStack.empty()) {
         string calledFunctionName = this->getCurrentCall();
-        if (true || lhs.field != "") {
+        if (false && lhs.field != "") {
             FunctionDeclaration *currentFunction = getFunction(calledFunctionName);
 
             string newVariableName = currentFunction->getCallArgument(variableName);
@@ -223,7 +223,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator
         solver->add_clause(UnitClause);
     }
 
-    updateAnswers("binOp", lhs);
+    updateAnswers("binOp", keyLhs.first, lhs);
 
     if (doDebug == 1) {
         cout << "\t" << keyLhs;
@@ -233,10 +233,10 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator
     }
 }
 
-void SatStaticAnalyzer::updateAnswers(const string &opName, const NIdentifier &lhs) {
+void SatStaticAnalyzer::updateAnswers(const string &opName, FullVariableName &keyLhs, const NIdentifier &lhs) {
     // TODO: good option here is to introduce a class with undef and int values of return
     int returnValue;
-    FullVariableNameOccurrence key = getFullVariableNameOccurrence(lhs);
+    FullVariableNameOccurrence key = getFullVariableNameOccurrence(keyLhs);
     if (isConstant(returnValue, key)) {
         cout << lhs.printName() << " from " << opName << " is " << returnValue <<
              " at line " << lhs.lineNumber << endl;
@@ -367,8 +367,12 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
 
     // return back to parent function
     calledFunction->clearCallInputMap();
-    callStack.pop_back();
 
+    for(unsigned int i = 0; i < methodCall.arguments.size(); i++) {
+        methodCall.arguments[i]->processCallOutput(i, *this);
+    }
+
+    string parentFunctionName = getParentCall();
     // map and check true output
     if (output.name != "") {
         // map function output and new variable
@@ -376,9 +380,15 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
         if (trueOutput.name == "") {
             cerr << "Warning: function " << calledFunctionName << " do not return any thing." << endl;
         }
-        addClauses(output, trueOutput);
+        FullVariableName lhs(parentFunctionName, output.name, output.field);
+        FullVariableName rhs(calledFunctionName, trueOutput.name, trueOutput.field);
+        addClauses(lhs, rhs);
+    }
+    callStack.pop_back();
 
-        updateAnswers("func \"" + calledFunctionName + "\"", output);
+    if (output.name != "") {
+        FullVariableName lhs(parentFunctionName, output.name, output.field);
+        updateAnswers("func \"" + calledFunctionName + "\"", lhs, output);
     }
 }
 
