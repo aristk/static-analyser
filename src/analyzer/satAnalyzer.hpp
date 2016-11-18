@@ -20,10 +20,13 @@ class FunctionDeclaration {
     // since recursive calls are not allowed at all, it is save to store just one copy of mapping between function
     // invocation inputs and function declaration inputs
     map<string, string> callInputMap;
+
+    map<string, unordered_set<string> > usageOfInputs;
+    map<string, unordered_set<string> > outputOfInputs;
     NIdentifier output;
     unique_ptr<NBlock> body;
 public:
-    FunctionDeclaration(): inputs(), callInputMap(), output("", "", 0), body() {}
+    FunctionDeclaration(): inputs(), callInputMap(), usageOfInputs(), outputOfInputs(), output("", "", 0), body() {}
 
     void addInput(const string &input) {
         if (isInput(input)) {
@@ -31,6 +34,14 @@ public:
         }
         inputsMap.emplace(input);
         inputs.push_back(input);
+    }
+
+    void addRhsUsage(string &name, string &field) {
+        usageOfInputs[name].insert(field);
+    }
+
+    void addLhsUsage(string &name, string &field) {
+        outputOfInputs[name].insert(field);
     }
 
     void mapCallInput(const string &localName, const string &nameInCall) {
@@ -172,4 +183,8 @@ public:
     virtual bool isConstant(int &returnValue, FullVariableNameOccurrence &nIdentifier);
 
     virtual ~SatStaticAnalyzer() {}
+
+    unsigned int getRhsSatVariable(FullVariableNameOccurrence &key);
+
+    unsigned int addLhsSatVariable(FullVariableNameOccurrence &key);
 };

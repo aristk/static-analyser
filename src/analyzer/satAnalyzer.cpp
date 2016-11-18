@@ -45,6 +45,34 @@ SatStaticAnalyzer::getSatVariable(FullVariableNameOccurrence &key) {
     return variables.at(key);
 }
 
+unsigned int
+SatStaticAnalyzer::getRhsSatVariable(FullVariableNameOccurrence &key) {
+    if(callStack.empty()) {
+        FunctionDeclaration *currentFunction = getFunction(currentFunctionName);
+        string name = getVariableName(key);
+        if (currentFunction->isInput(name)) {
+            string field = getVariableField(key);
+            currentFunction->addRhsUsage(name, field);
+        }
+    }
+
+    return getSatVariable(key);
+}
+
+unsigned int
+SatStaticAnalyzer::addLhsSatVariable(FullVariableNameOccurrence &key) {
+    if(callStack.empty()) {
+        FunctionDeclaration *currentFunction = getFunction(currentFunctionName);
+        string name = getVariableName(key);
+        if (currentFunction->isInput(name)) {
+            string field = getVariableField(key);
+            currentFunction->addLhsUsage(name, field);
+        }
+    }
+
+    return addNewSatVariable(key);
+}
+
 const FullVariableName SatStaticAnalyzer::getFullVariableName(const NIdentifier &lhs) {
     string variableName = lhs.name;
 
@@ -85,10 +113,10 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rh
     // it is important to first get old variable and then introduce a new variable
     // Use case x = x
     FullVariableNameOccurrence keyRhs = getFullVariableNameOccurrence(rhs);
-    nVars[1] = getSatVariable(keyRhs);
+    nVars[1] = getRhsSatVariable(keyRhs);
 
     FullVariableNameOccurrence keyLhs = getFullVariableNameOccurrence(lhs);
-    nVars[0] = addNewSatVariable(keyLhs);
+    nVars[0] = addLhsSatVariable(keyLhs);
 
     vector<unsigned int> clause(variableCount);
 
@@ -137,14 +165,14 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator
     FullVariableNameOccurrence empty(FullVariableName("", "", ""), 0);
     nVars[0] = addNewSatVariable(empty);
     FullVariableNameOccurrence keyBinLhs = getFullVariableNameOccurrence(nBinaryOperator.lhs);
-    nVars[1] = getSatVariable(keyBinLhs);
+    nVars[1] = getRhsSatVariable(keyBinLhs);
     FullVariableNameOccurrence keyBinRhs = getFullVariableNameOccurrence(nBinaryOperator.rhs);
-    nVars[2] = getSatVariable(keyBinRhs);
+    nVars[2] = getRhsSatVariable(keyBinRhs);
 
     // add new variables to handle output of NBinaryOperator
     unsigned int newVarLast = solver->nVars();
     FullVariableNameOccurrence keyLhs = getFullVariableNameOccurrence(lhs);
-    nVars[3] = addNewSatVariable(keyLhs);
+    nVars[3] = addLhsSatVariable(keyLhs);
 
     vector<unsigned int> clause(variableCount);
     vector<Lit> binClause(2);
