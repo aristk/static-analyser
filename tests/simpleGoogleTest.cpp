@@ -76,6 +76,14 @@ TEST(testCore, NegativeTestsAnalyzerExceptions) {
     inputFileName = "test/recursiveCall.myprog" ;
 
     ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), recursiveCall);
+
+    inputFileName = "test/functionIsNotDefined.myprog" ;
+
+    ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), FunctionIsNotDefined);
+
+    inputFileName = "test/functionDefinedTwice.myprog" ;
+
+    ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), FunctionDefinedTwice);
 }
 
 // TODO: looks like crash of parser is due to one instance of it

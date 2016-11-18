@@ -58,3 +58,4 @@ fabric.properties
 # .idea/misc.xml 
 # *.ipr
 cmake-build-debug/
+.idea/dictionaries/

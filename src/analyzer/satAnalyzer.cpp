@@ -249,6 +249,13 @@ SatStaticAnalyzer::isConstant(int &returnValue, FullVariableNameOccurrence &key)
 }
 
 void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier &functionName) {
+
+    string name = functionName.printName();
+
+    if (functions.count(name) != 0) {
+        throw FunctionDefinedTwice(name);
+    }
+
     unique_ptr<FunctionDeclaration> Function(new FunctionDeclaration);
 
     for(auto i : inputs) {
@@ -258,8 +265,6 @@ void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier 
         }
         Function->addInput(i->printName());
     }
-
-    string name = functionName.printName();
 
     currentFunctionName = name;
     if(doDebug == 1) {

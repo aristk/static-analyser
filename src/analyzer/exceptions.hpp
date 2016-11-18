@@ -53,6 +53,18 @@ class FunctionIsNotDefined: public exception {
     }
 };
 
+class FunctionDefinedTwice: public exception {
+    string output;
+    virtual const char* what() const throw() {
+        return output.c_str();
+    }
+public:
+    FunctionDefinedTwice(const string& name):
+            output("Function " + name + " defined two time.")
+    { }
+
+};
+
 class InputIsAStruct: public exception {
     virtual const char* what() const throw() {
         return "Integer input argument is used as a struct.";
