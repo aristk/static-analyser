@@ -18,7 +18,7 @@ unsigned int SatStaticAnalyzer::addNewSatVariable(FullVariableNameOccurrence &ke
     unsigned int nVars = solver->nVars();
 
     // in case of dummy variables, do not map them
-    if (key.first.first != "") {
+    if (getVariableName(key) != "") {
         if (variables.count(key) > 0) {
             // if variable that going to be assigned was used previously, then we need to create new 
             // variable (previous incarnations of variable could be used, so we should not erase them)
@@ -48,17 +48,23 @@ SatStaticAnalyzer::getSatVariable(FullVariableNameOccurrence &key) {
 const FullVariableName SatStaticAnalyzer::getFullVariableName(const NIdentifier &lhs) {
     string variableName = lhs.name;
 
+    string callName = currentFunctionName;
+    // side effect is only for fields
     if(!callStack.empty()) {
         string calledFunctionName = this->getCurrentCall();
-        FunctionDeclaration *currentFunction = getFunction(calledFunctionName);
+        if (true || lhs.field != "") {
+            FunctionDeclaration *currentFunction = getFunction(calledFunctionName);
 
-        string newVariableName = currentFunction->getCallArgument(variableName);
-        if (newVariableName != "") {
-            variableName = newVariableName;
+            string newVariableName = currentFunction->getCallArgument(variableName);
+            if (newVariableName != "") {
+                variableName = newVariableName;
+            }
+        } else {
+            callName = calledFunctionName;
         }
     }
 
-    return FullVariableName(variableName, lhs.field);
+    return FullVariableName(callName, variableName, lhs.field);
 }
 
 FullVariableNameOccurrence SatStaticAnalyzer::getFullVariableNameOccurrence(const NIdentifier &nIdentifier) {
@@ -128,7 +134,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator
     vector<unsigned int> nVars(variableCount+1);
 
     // create dummy variables for computations
-    FullVariableNameOccurrence empty(FullVariableName("", ""), 0);
+    FullVariableNameOccurrence empty(FullVariableName("", "", ""), 0);
     nVars[0] = addNewSatVariable(empty);
     FullVariableNameOccurrence keyBinLhs = getFullVariableNameOccurrence(nBinaryOperator.lhs);
     nVars[1] = getSatVariable(keyBinLhs);
@@ -311,7 +317,6 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
     }
 
     // map inputs
-    // TODO: check that integer input is not used as struct later
     for(unsigned int i = 0; i < methodCall.arguments.size(); i++) {
         methodCall.arguments[i]->processCallInput(i, *this);
     }
@@ -328,7 +333,11 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
     // map and check true output
     if (output.name != "") {
         // map function output and new variable
-        addClauses(output, calledFunction->getTrueOutput());
+        NIdentifier trueOutput = calledFunction->getTrueOutput();
+        if (trueOutput.name == "") {
+            cerr << "Warning: function " << calledFunctionName << " do not return any thing." << endl;
+        }
+        addClauses(output, trueOutput);
 
         updateAnswers("func \"" + calledFunctionName + "\"", output);
     }

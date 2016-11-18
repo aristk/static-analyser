@@ -16,12 +16,14 @@ func <func>(X, Y, …) // function declaration
 X = <func>(X, Y, …) // call of function with return
 return X
 ```
-There is no dedicated variable declaration: if variable is not used previously, then it is just newly created. All 
+### Language limitations
+
+1. There is no dedicated variable declaration: if variable is not used previously, then it is just newly created. All 
 variables are local and integers. 
 
-It is possible to assign a = 1 even if a.x = 1 previously. Both are just not connected valid names.
+2. It is possible to assign a = 1 even if a.x = 1 previously. Both are just not connected valid names.
 
-Function are [called by value](https://www.codingunit.com/c-tutorial-call-by-value-or-call-by-reference). 
+3. Function are [called by value](https://www.codingunit.com/c-tutorial-call-by-value-or-call-by-reference). 
 [Side effect](https://en.wikipedia.org/wiki/Side_effect_(computer_science)) could be obtained only when you modify a 
 field of an argument:
 ```
@@ -29,6 +31,12 @@ func foo(a, b) {
  a.x = b
 }
 ```
+4. We could not have nested function declarations.
+5. We could not have functions with same names.
+6. We could use function before its declaration. It is close to
+   [C++ way](http://stackoverflow.com/questions/29967202/why-cant-i-define-a-function-inside-another-function).
+7. We could not have assignments or field of structure as function argument.
+8. Variables names are strings.
 
 ## Scanner and Parser
 Easiest, fastest and widely used way to create parsers for new languages is flex/bison. To create a rough parser for 

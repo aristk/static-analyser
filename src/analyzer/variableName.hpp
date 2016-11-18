@@ -1,13 +1,16 @@
-// name, field
 #include <string>
 #include <iostream>
 
 using namespace std;
 
-typedef pair<string, string> FullVariableName;
+// function name, name, field
+typedef tuple<string, string, string> FullVariableName;
 
 typedef pair<FullVariableName, unsigned int> FullVariableNameOccurrence;
 
-std::ostream& operator<<(std::ostream& os, const FullVariableName& obj);
+ostream& operator<<(ostream& os, const FullVariableName& obj);
 
-std::ostream& operator<<(std::ostream& os, const FullVariableNameOccurrence& obj);
+ostream& operator<<(ostream& os, const FullVariableNameOccurrence& obj);
+
+string getVariableName(const FullVariableName& obj);
+string getVariableName(const FullVariableNameOccurrence& obj);

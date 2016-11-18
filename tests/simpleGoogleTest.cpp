@@ -16,12 +16,16 @@ TEST(testCore, PositiveTests) {
     vector<pair<int, int> > pattern;
 
     inputFileName = "test/diffNamesExample.myprog";
+    // TODO: check later
+//    inputFileName = "test/sideEffect1.myprog";
     answers = parseAndAnalyze(inputFileName.c_str());
     pattern = {{0, 19}, {1, 25}, {1, 32}};
     ASSERT_THAT(answers,
                 ElementsAreArray(pattern));
 
     inputFileName = "test/originalExample.myprog";
+// TODO: check later
+//    inputFileName = "test/sideEffect2.myprog";
     answers = parseAndAnalyze(inputFileName.c_str());
     pattern = {{0, 15}, {1, 21}, {1, 28}};
     ASSERT_THAT(answers,

@@ -1,0 +1,8 @@
+func foo(z) {
+    x = z
+}
+
+func bar() {
+    foo(z)
+    x = x == z
+}

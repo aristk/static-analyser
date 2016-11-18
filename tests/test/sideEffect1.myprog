@@ -1,0 +1,9 @@
+func foo(z) {
+    x = z
+}
+
+// TODO: check also with z (other issue)
+func bar() {
+    foo(y)
+    x = x == y
+}
