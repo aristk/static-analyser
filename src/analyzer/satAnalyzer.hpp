@@ -16,17 +16,13 @@ class FunctionDeclaration {
     // TODO: best solution is to use boost::bimap here
     unordered_set<string> inputsMap;
     vector<string> inputs;
-    // map to keep correspondence between original arguments and call arguments for later substitution
-    // since recursive calls are not allowed at all, it is save to store just one copy of mapping between function
-    // invocation inputs and function declaration inputs
-    map<string, string> callInputMap;
 
     map<string, unordered_set<string> > usageOfInputs;
     map<string, unordered_set<string> > outputOfInputs;
     NIdentifier output;
     unique_ptr<NBlock> body;
 public:
-    FunctionDeclaration(): inputs(), callInputMap(), usageOfInputs(), outputOfInputs(), output("", "", 0), body() {}
+    FunctionDeclaration(): inputs(), usageOfInputs(), outputOfInputs(), output("", "", 0), body() {}
 
     void addInput(const string &input) {
         if (isInput(input)) {
@@ -51,22 +47,6 @@ public:
     void addLhsUsage(string &name, string &field) {
         outputOfInputs[name].insert(field);
     }
-
-    void mapCallInput(const string &localName, const string &nameInCall) {
-        callInputMap.emplace(localName, nameInCall);
-    }
-
-    const string getCallArgument(const string &localName) const {
-        if (callInputMap.count(localName) == 0) {
-            return "";
-        }
-        return callInputMap.at(localName);
-    }
-
-    void clearCallInputMap() {
-        callInputMap.clear();
-    }
-
 
     void addBody(NBlock *FunctionBody) {
         body = move(unique_ptr<NBlock>(FunctionBody));
@@ -166,7 +146,9 @@ public:
     void updateAnswers(const string &opName, FullVariableName &keyLhs, const NIdentifier &lhs);
 
     const string getCurrentCall() {
-        assert(!callStack.empty());
+        if(callStack.empty()){
+            return currentFunctionName;
+        }
         return callStack.back();
     }
 

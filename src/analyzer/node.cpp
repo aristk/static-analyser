@@ -64,17 +64,8 @@ void NIdentifier::processCallInput(unsigned int inputId, SatStaticAnalyzer &cont
     FunctionDeclaration *calledFunction = context.getFunction(callFunctionName);
 
     string inputName = calledFunction->getInput(inputId);
-    string newName = name;
     string parentFunctionName = context.getParentCall();
     FunctionDeclaration *parentFunction = context.getFunction(parentFunctionName);
-
-    if (parentFunctionName != "") {
-        newName = parentFunction->getCallArgument(name);
-        if (newName == "")
-            newName = name;
-    }
-
-    calledFunction->mapCallInput(inputName, newName);
 
     unordered_set<string> usageOfInput = calledFunction->getUsageOfInputs(inputName);
 
@@ -123,9 +114,6 @@ void NInteger::processCallInput(unsigned int inputId, SatStaticAnalyzer &context
     string inputName = calledFunction->getInput(inputId);
 
     NIdentifier lhs(inputName, 0);
-
-    // we to map all inputs also that have integer values, for that we need a new name
-    calledFunction->mapCallInput(inputName, lhs.name);
 
     context.addClauses(lhs, *this);
 }

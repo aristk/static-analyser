@@ -74,25 +74,9 @@ SatStaticAnalyzer::addLhsSatVariable(FullVariableNameOccurrence &key) {
 }
 
 const FullVariableName SatStaticAnalyzer::getFullVariableName(const NIdentifier &lhs) {
-    string variableName = lhs.name;
+    string callName = getCurrentCall();
 
-    string callName = currentFunctionName;
-    // side effect is only for fields
-    if(!callStack.empty()) {
-        string calledFunctionName = this->getCurrentCall();
-        if (false && lhs.field != "") {
-            FunctionDeclaration *currentFunction = getFunction(calledFunctionName);
-
-            string newVariableName = currentFunction->getCallArgument(variableName);
-            if (newVariableName != "") {
-                variableName = newVariableName;
-            }
-        } else {
-            callName = calledFunctionName;
-        }
-    }
-
-    return FullVariableName(callName, variableName, lhs.field);
+    return FullVariableName(callName, lhs.name, lhs.field);
 }
 
 FullVariableNameOccurrence SatStaticAnalyzer::getFullVariableNameOccurrence(const NIdentifier &nIdentifier) {
@@ -173,7 +157,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator
     vector<unsigned int> nVars(variableCount+1);
 
     // create dummy variables for computations
-    FullVariableNameOccurrence empty(FullVariableName("", "", ""), 0);
+    FullVariableNameOccurrence empty(FullVariableName(), 0);
     nVars[0] = addNewSatVariable(empty);
     FullVariableNameOccurrence keyBinLhs = getFullVariableNameOccurrence(nBinaryOperator.lhs);
     nVars[1] = getRhsSatVariable(keyBinLhs);
@@ -365,9 +349,7 @@ void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIden
     // inline function body
     calledFunction->getBody()->genCheck(*this);
 
-    // return back to parent function
-    calledFunction->clearCallInputMap();
-
+    // map back side effect outputs
     for(unsigned int i = 0; i < methodCall.arguments.size(); i++) {
         methodCall.arguments[i]->processCallOutput(i, *this);
     }
