@@ -17,6 +17,5 @@ public:
     virtual void updateAnswers(const string &opName, FullVariableName &keyLhs, const NIdentifier &lhs);
 
     virtual vector<pair<int, unsigned int> > getAnswers();
-
 };
 #endif //STATICANALYZERROOT_SATSTATICANALYZER_HPP

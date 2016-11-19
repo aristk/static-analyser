@@ -85,6 +85,10 @@ public:
 class IncrementalSatStaticAnalyzer : public StaticAnalyzer {
     // how many bits we need per integer (depends on int count from parser)
     unsigned int numOfBitsPerInt;
+public:
+    unsigned int getNumOfBitsPerInt() const;
+
+private:
 
     int doDebug = 0;
 
@@ -104,7 +108,6 @@ class IncrementalSatStaticAnalyzer : public StaticAnalyzer {
     vector<pair<int, unsigned int> > answers;
 
     unsigned int addNewSatVariable(FullVariableNameOccurrence &nIdentifier);
-    unsigned int getSatVariable(FullVariableNameOccurrence &nIdentifier);
 
     const FullVariableName getFullVariableName(const NIdentifier &lhs);
     FullVariableNameOccurrence getFullVariableNameOccurrence(const NIdentifier &nIdentifier);
@@ -121,6 +124,12 @@ class IncrementalSatStaticAnalyzer : public StaticAnalyzer {
     }
 
 public:
+    unsigned int getSatVariable(FullVariableNameOccurrence &nIdentifier);
+
+    SATSolver *getSolver() {
+        return solver.get();
+    }
+
     IncrementalSatStaticAnalyzer() : solver(new SATSolver), variables(), variableOccurrences(), callStack(),
                           functions(), currentFunctionName(), answers() {
         // we need at least one bit for boolean variable

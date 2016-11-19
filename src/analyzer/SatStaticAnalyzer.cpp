@@ -19,6 +19,9 @@ vector<pair<int, unsigned int> > SatStaticAnalyzer::getAnswers() {
     unsigned int lineNumber;
     string opName;
 
+    lbool result = getSolver()->solve();
+    assert(result == l_True);
+
     for (auto i : variablesToCheck) {
         FullVariableNameOccurrence key = get<0>(i);
         opName = get<1>(i);
@@ -31,5 +34,3 @@ vector<pair<int, unsigned int> > SatStaticAnalyzer::getAnswers() {
     }
     return answers;
 }
-
-

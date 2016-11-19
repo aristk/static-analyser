@@ -218,6 +218,14 @@ void IncrementalSatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBin
 }
 
 void IncrementalSatStaticAnalyzer::updateAnswers(const string &opName, FullVariableName &keyLhs, const NIdentifier &lhs) {
+    // do not check for inlined functions
+    if (!callStack.empty())
+        return;
+
+    lbool result = solver->solve();
+
+    assert(result == l_True);
+
     // TODO: good option here is to introduce a class with undef and int values of return
     int returnValue;
     FullVariableNameOccurrence key = getFullVariableNameOccurrence(keyLhs);
@@ -231,16 +239,7 @@ void IncrementalSatStaticAnalyzer::updateAnswers(const string &opName, FullVaria
 bool
 IncrementalSatStaticAnalyzer::isConstant(int &returnValue, FullVariableNameOccurrence &key) {
 
-    // do not check for inlined functions
-    if (!callStack.empty())
-        return false;
-
-
     const unsigned int lowerBitVariable = getSatVariable(key);
-
-    lbool result = solver->solve();
-
-    assert(result == l_True);
 
     int countEqualBits = 0;
     returnValue = 0;
@@ -372,6 +371,10 @@ void IncrementalSatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, 
         FullVariableName lhs(parentFunctionName, output.name, output.field);
         updateAnswers("func \"" + calledFunctionName + "\"", lhs, output);
     }
+}
+
+unsigned int IncrementalSatStaticAnalyzer::getNumOfBitsPerInt() const {
+    return numOfBitsPerInt;
 }
 
 
