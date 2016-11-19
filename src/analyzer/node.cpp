@@ -69,6 +69,11 @@ void NIdentifier::processCallInput(unsigned int inputId, SatStaticAnalyzer &cont
 
     unordered_set<string> usageOfInput = calledFunction->getUsageOfInputs(inputName);
 
+    // handle conner case with struct as call argument
+    if (field != "") {
+        throw WrongFunctionArgument();
+    }
+
     for(auto i : usageOfInput) {
         FullVariableName lhs(callFunctionName, inputName, i);
         FullVariableName rhs(parentFunctionName, name, i);

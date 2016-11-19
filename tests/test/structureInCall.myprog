@@ -1,0 +1,9 @@
+func foo(a, b) {
+    a.x = b
+    return b.x
+}
+
+func test() {
+    foo(b, a.x)
+    z = a.x == b.x
+}

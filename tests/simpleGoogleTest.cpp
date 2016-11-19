@@ -73,6 +73,10 @@ TEST(testCore, NegativeTestsAnalyzerExceptions) {
 
     ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), InputIsAStruct);
 
+    inputFileName = "test/structureInCall.myprog";
+
+    ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), WrongFunctionArgument);
+
     inputFileName = "test/globalVar.myprog" ;
 
     ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), notNFunctionDeclaration);
