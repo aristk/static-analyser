@@ -1,8 +1,8 @@
 #include <assert.h>
 #include "analyzer/node.h"
-#include "satAnalyzer.hpp"
+#include "incSatAnalyzer.hpp"
 
-void SatStaticAnalyzer::addClauses(const NBlock &root) {
+void IncrementalSatStaticAnalyzer::addClauses(const NBlock &root) {
     for(auto i : root.statements) {
         if (!(i->isFunctionDeclaration())) {
             // TODO: add to the parser check that only NFunctionDeclaration could be here
@@ -12,7 +12,7 @@ void SatStaticAnalyzer::addClauses(const NBlock &root) {
     }
 }
 
-unsigned int SatStaticAnalyzer::addNewSatVariable(FullVariableNameOccurrence &key) {
+unsigned int IncrementalSatStaticAnalyzer::addNewSatVariable(FullVariableNameOccurrence &key) {
 
     // number of used variables
     unsigned int nVars = solver->nVars();
@@ -35,7 +35,7 @@ unsigned int SatStaticAnalyzer::addNewSatVariable(FullVariableNameOccurrence &ke
 }
 
 unsigned int
-SatStaticAnalyzer::getSatVariable(FullVariableNameOccurrence &key) {
+IncrementalSatStaticAnalyzer::getSatVariable(FullVariableNameOccurrence &key) {
 
     // if variables was not defined, define them
     if (variables.count(key) == 0) {
@@ -46,7 +46,7 @@ SatStaticAnalyzer::getSatVariable(FullVariableNameOccurrence &key) {
 }
 
 unsigned int
-SatStaticAnalyzer::getRhsSatVariable(FullVariableNameOccurrence &key) {
+IncrementalSatStaticAnalyzer::getRhsSatVariable(FullVariableNameOccurrence &key) {
     if(callStack.empty()) {
         FunctionDeclaration *currentFunction = getFunction(currentFunctionName);
         string name = getVariableName(key);
@@ -60,7 +60,7 @@ SatStaticAnalyzer::getRhsSatVariable(FullVariableNameOccurrence &key) {
 }
 
 unsigned int
-SatStaticAnalyzer::addLhsSatVariable(FullVariableNameOccurrence &key) {
+IncrementalSatStaticAnalyzer::addLhsSatVariable(FullVariableNameOccurrence &key) {
     if(callStack.empty()) {
         FunctionDeclaration *currentFunction = getFunction(currentFunctionName);
         string name = getVariableName(key);
@@ -73,13 +73,13 @@ SatStaticAnalyzer::addLhsSatVariable(FullVariableNameOccurrence &key) {
     return addNewSatVariable(key);
 }
 
-const FullVariableName SatStaticAnalyzer::getFullVariableName(const NIdentifier &lhs) {
+const FullVariableName IncrementalSatStaticAnalyzer::getFullVariableName(const NIdentifier &lhs) {
     string callName = getCurrentCall();
 
     return FullVariableName(callName, lhs.name, lhs.field);
 }
 
-FullVariableNameOccurrence SatStaticAnalyzer::getFullVariableNameOccurrence(const NIdentifier &nIdentifier) {
+FullVariableNameOccurrence IncrementalSatStaticAnalyzer::getFullVariableNameOccurrence(const NIdentifier &nIdentifier) {
 
     FullVariableName fullVariableName = getFullVariableName(nIdentifier);
 
@@ -87,7 +87,7 @@ FullVariableNameOccurrence SatStaticAnalyzer::getFullVariableNameOccurrence(cons
 
 }
 
-FullVariableNameOccurrence SatStaticAnalyzer::getFullVariableNameOccurrence(FullVariableName &fullVariableName) const {
+FullVariableNameOccurrence IncrementalSatStaticAnalyzer::getFullVariableNameOccurrence(FullVariableName &fullVariableName) const {
     unsigned int occurrence = getOccurrences(fullVariableName);
 
     FullVariableNameOccurrence key = make_pair(fullVariableName, occurrence);
@@ -95,7 +95,7 @@ FullVariableNameOccurrence SatStaticAnalyzer::getFullVariableNameOccurrence(Full
     return key;
 }
 
-void SatStaticAnalyzer::addClauses(FullVariableName &lhs, FullVariableName &rhs) {
+void IncrementalSatStaticAnalyzer::addClauses(FullVariableName &lhs, FullVariableName &rhs) {
     const int variableCount = 2;
     vector<unsigned int> nVars(variableCount);
     // it is important to first get old variable and then introduce a new variable
@@ -122,14 +122,14 @@ void SatStaticAnalyzer::addClauses(FullVariableName &lhs, FullVariableName &rhs)
     }
 }
 
-void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rhs) {
+void IncrementalSatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NIdentifier &rhs) {
 
     FullVariableName fullLhs = getFullVariableName(lhs);
     FullVariableName fullRhs = getFullVariableName(rhs);
     addClauses(fullLhs, fullRhs);
 }
 
-void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NInteger &nInteger) {
+void IncrementalSatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NInteger &nInteger) {
 
     int value = NInteger::intMapping[nInteger.value];
 
@@ -151,7 +151,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NInteger &nInte
     }
 }
 
-void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator) {
+void IncrementalSatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator &nBinaryOperator) {
     // operands of binary operation could not be integers (checked by parser)
     const int variableCount = 3;
     vector<unsigned int> nVars(variableCount+1);
@@ -217,7 +217,7 @@ void SatStaticAnalyzer::addClauses(const NIdentifier &lhs, const NBinaryOperator
     }
 }
 
-void SatStaticAnalyzer::updateAnswers(const string &opName, FullVariableName &keyLhs, const NIdentifier &lhs) {
+void IncrementalSatStaticAnalyzer::updateAnswers(const string &opName, FullVariableName &keyLhs, const NIdentifier &lhs) {
     // TODO: good option here is to introduce a class with undef and int values of return
     int returnValue;
     FullVariableNameOccurrence key = getFullVariableNameOccurrence(keyLhs);
@@ -229,7 +229,7 @@ void SatStaticAnalyzer::updateAnswers(const string &opName, FullVariableName &ke
 }
 
 bool
-SatStaticAnalyzer::isConstant(int &returnValue, FullVariableNameOccurrence &key) {
+IncrementalSatStaticAnalyzer::isConstant(int &returnValue, FullVariableNameOccurrence &key) {
 
     // do not check for inlined functions
     if (!callStack.empty())
@@ -277,7 +277,7 @@ SatStaticAnalyzer::isConstant(int &returnValue, FullVariableNameOccurrence &key)
 
 }
 
-void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier &functionName) {
+void IncrementalSatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier &functionName) {
 
     string name = functionName.printName();
 
@@ -313,14 +313,14 @@ void SatStaticAnalyzer::addInputs(const VariableList &inputs, const NIdentifier 
     functions.emplace(name, move(Function));
 }
 
-void SatStaticAnalyzer::addTrueOutput(const NIdentifier &variableName){
+void IncrementalSatStaticAnalyzer::addTrueOutput(const NIdentifier &variableName){
     FunctionDeclaration *currentFunction = getFunction(currentFunctionName);
 
     currentFunction->addTrueOutput(variableName);
 }
 
 
-void SatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIdentifier &output) {
+void IncrementalSatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, const NIdentifier &output) {
 
     string calledFunctionName = methodCall.id.name;
 

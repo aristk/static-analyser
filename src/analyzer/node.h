@@ -9,7 +9,7 @@
 #include "exceptions.hpp"
 #include "variableName.hpp"
 
-class SatStaticAnalyzer;
+class IncrementalSatStaticAnalyzer;
 class NStatement;
 class NExpression;
 class NVariableDeclaration;
@@ -26,22 +26,22 @@ public:
 
     std::string name() const { return typeid(*this).name(); }
 
-    virtual void genCheck(SatStaticAnalyzer &context) const {
+    virtual void genCheck(IncrementalSatStaticAnalyzer &context) const {
         throw functionIsNotImplemented("genCheck", name());
     }
 
-    virtual void addClauses(const NIdentifier &nIdentifier, SatStaticAnalyzer &context) const {
+    virtual void addClauses(const NIdentifier &nIdentifier, IncrementalSatStaticAnalyzer &context) const {
         throw functionIsNotImplemented("addClauses", name());
     }
 };
 
 class NExpression : public Node {
 public:
-    virtual void processCallInput(unsigned int inputId, SatStaticAnalyzer &context) {
+    virtual void processCallInput(unsigned int inputId, IncrementalSatStaticAnalyzer &context) {
         throw functionIsNotImplemented("processCallInput", name());
     }
 
-    virtual void processCallOutput(unsigned int inputId, SatStaticAnalyzer &context) {
+    virtual void processCallOutput(unsigned int inputId, IncrementalSatStaticAnalyzer &context) {
         throw functionIsNotImplemented("processCallOutput", name());
     }
 };
@@ -65,13 +65,13 @@ public:
         }
     }
 
-    virtual void processCallInput(unsigned int inputId, SatStaticAnalyzer &context);
+    virtual void processCallInput(unsigned int inputId, IncrementalSatStaticAnalyzer &context);
 
-    virtual void processCallOutput(unsigned int inputId, SatStaticAnalyzer &context) {
+    virtual void processCallOutput(unsigned int inputId, IncrementalSatStaticAnalyzer &context) {
 
     }
 
-    virtual void addClauses(const NIdentifier &nIdentifier, SatStaticAnalyzer &context) const;
+    virtual void addClauses(const NIdentifier &nIdentifier, IncrementalSatStaticAnalyzer &context) const;
 
 };
 
@@ -84,7 +84,7 @@ public:
     NIdentifier(const std::string& name, const std::string& field, unsigned int lineNumber) :
             name(name), field(field), lineNumber(lineNumber) { }
 
-    virtual void addClauses(const NIdentifier &nIdentifier, SatStaticAnalyzer &context) const;
+    virtual void addClauses(const NIdentifier &nIdentifier, IncrementalSatStaticAnalyzer &context) const;
 
     std::string printName() const {
         if(field != "")
@@ -93,9 +93,9 @@ public:
             return name;
     }
 
-    virtual void processCallInput(unsigned int inputId, SatStaticAnalyzer &context);
+    virtual void processCallInput(unsigned int inputId, IncrementalSatStaticAnalyzer &context);
 
-    virtual void processCallOutput(unsigned int inputId, SatStaticAnalyzer &context);
+    virtual void processCallOutput(unsigned int inputId, IncrementalSatStaticAnalyzer &context);
 };
 
 class NMethodCall : public NExpression {
@@ -105,9 +105,9 @@ public:
     NMethodCall(const NIdentifier& id, ExpressionList& arguments) :
             id(id), arguments(arguments) { }
 
-    virtual void genCheck(SatStaticAnalyzer& context) const;
+    virtual void genCheck(IncrementalSatStaticAnalyzer& context) const;
 
-    virtual void addClauses(const NIdentifier &nIdentifier, SatStaticAnalyzer &context) const;
+    virtual void addClauses(const NIdentifier &nIdentifier, IncrementalSatStaticAnalyzer &context) const;
 };
 
 class NBinaryOperator : public NExpression {
@@ -118,7 +118,7 @@ public:
     NBinaryOperator(NIdentifier &lhs, bool op, NIdentifier &rhs) :
             lhs(lhs), rhs(rhs), op(op) { }
 
-    virtual void addClauses(const NIdentifier &nIdentifier, SatStaticAnalyzer &context) const;
+    virtual void addClauses(const NIdentifier &nIdentifier, IncrementalSatStaticAnalyzer &context) const;
 };
 
 class NAssignment : public NExpression {
@@ -134,7 +134,7 @@ public:
     StatementList statements;
     NBlock() { }
 
-    virtual void genCheck(SatStaticAnalyzer &context) const;
+    virtual void genCheck(IncrementalSatStaticAnalyzer &context) const;
 };
 
 class NExpressionStatement : public NStatement {
@@ -143,7 +143,7 @@ public:
     NExpressionStatement(NExpression& expression) :
             expression(expression) { }
 
-    virtual void genCheck(SatStaticAnalyzer& context) const {
+    virtual void genCheck(IncrementalSatStaticAnalyzer& context) const {
         expression.genCheck(context);
     }
 };
@@ -154,7 +154,7 @@ public:
     NReturnStatement(NIdentifier& variable) :
             variable(variable) { }
 
-    virtual void genCheck(SatStaticAnalyzer& context) const;
+    virtual void genCheck(IncrementalSatStaticAnalyzer& context) const;
 };
 
 class NVariableDeclaration : public NStatement {
@@ -166,7 +166,7 @@ public:
     NVariableDeclaration(NIdentifier& id, NExpression *assignmentExpr) :
             id(id), assignmentExpr(assignmentExpr) { }
 
-    virtual void genCheck(SatStaticAnalyzer& context) const;
+    virtual void genCheck(IncrementalSatStaticAnalyzer& context) const;
 };
 
 class NFunctionDeclaration : public NStatement {
@@ -178,7 +178,7 @@ public:
                          const VariableList& arguments, NBlock& block) :
             id(id), arguments(arguments), block(block) { }
 
-    virtual void genCheck(SatStaticAnalyzer& context) const;
+    virtual void genCheck(IncrementalSatStaticAnalyzer& context) const;
 
     virtual bool isFunctionDeclaration () {
         return true;

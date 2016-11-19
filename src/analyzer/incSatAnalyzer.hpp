@@ -82,7 +82,7 @@ public:
     virtual ~StaticAnalyzer() {}
 };
 
-class SatStaticAnalyzer : public StaticAnalyzer {
+class IncrementalSatStaticAnalyzer : public StaticAnalyzer {
     // how many bits we need per integer (depends on int count from parser)
     unsigned int numOfBitsPerInt;
 
@@ -121,7 +121,7 @@ class SatStaticAnalyzer : public StaticAnalyzer {
     }
 
 public:
-    SatStaticAnalyzer() : solver(new SATSolver), variables(), variableOccurrences(), callStack(),
+    IncrementalSatStaticAnalyzer() : solver(new SATSolver), variables(), variableOccurrences(), callStack(),
                           functions(), currentFunctionName(), answers() {
         // we need at least one bit for boolean variable
         numOfBitsPerInt = (unsigned int) ceil(log2(max((unsigned int) 2, NInteger::differentIntCount)));
@@ -178,7 +178,7 @@ public:
 
     virtual bool isConstant(int &returnValue, FullVariableNameOccurrence &nIdentifier);
 
-    virtual ~SatStaticAnalyzer() {}
+    virtual ~IncrementalSatStaticAnalyzer() {}
 
     unsigned int getRhsSatVariable(FullVariableNameOccurrence &key);
 

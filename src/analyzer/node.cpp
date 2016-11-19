@@ -1,11 +1,11 @@
 #include "analyzer/node.h"
-#include "satAnalyzer.hpp"
+#include "incSatAnalyzer.hpp"
 
 
 map<int, unsigned int> NInteger::intMapping;
 unsigned int NInteger::differentIntCount = 0;
 
-void NBlock::genCheck(SatStaticAnalyzer &context) const {
+void NBlock::genCheck(IncrementalSatStaticAnalyzer &context) const {
     for(auto i : statements) {
         if (i->isFunctionDeclaration()) {
             // TODO: add to the parser check that NFunctionDeclaration could not be here
@@ -15,7 +15,7 @@ void NBlock::genCheck(SatStaticAnalyzer &context) const {
     }
 }
 
-void NFunctionDeclaration::genCheck(SatStaticAnalyzer &context) const {
+void NFunctionDeclaration::genCheck(IncrementalSatStaticAnalyzer &context) const {
     // process inputs
     context.addInputs(arguments, id);
 
@@ -25,40 +25,40 @@ void NFunctionDeclaration::genCheck(SatStaticAnalyzer &context) const {
     block.genCheck(context);
 }
 
-void NVariableDeclaration::genCheck(SatStaticAnalyzer &context) const {
+void NVariableDeclaration::genCheck(IncrementalSatStaticAnalyzer &context) const {
     assignmentExpr->addClauses(id, context);
 }
 
-void NReturnStatement::genCheck(SatStaticAnalyzer &context) const {
+void NReturnStatement::genCheck(IncrementalSatStaticAnalyzer &context) const {
     context.addTrueOutput(this->variable);
 }
 
-void NMethodCall::genCheck(SatStaticAnalyzer &context) const {
+void NMethodCall::genCheck(IncrementalSatStaticAnalyzer &context) const {
     NIdentifier key("", "", 0);
     context.mapMethodCall(*this, key);
 }
 
-void NMethodCall::addClauses(const NIdentifier &key, SatStaticAnalyzer &context) const {
+void NMethodCall::addClauses(const NIdentifier &key, IncrementalSatStaticAnalyzer &context) const {
     context.mapMethodCall(*this, key);
 }
 
 // key = this
-void NInteger::addClauses(const NIdentifier &lhs, SatStaticAnalyzer &context) const {
+void NInteger::addClauses(const NIdentifier &lhs, IncrementalSatStaticAnalyzer &context) const {
     context.addClauses(lhs, *this);
 }
 
 // key = this
-void NBinaryOperator::addClauses(const NIdentifier &lhs, SatStaticAnalyzer &context) const {
+void NBinaryOperator::addClauses(const NIdentifier &lhs, IncrementalSatStaticAnalyzer &context) const {
     context.addClauses(lhs, *this);
 }
 
 // lhs = this
-void NIdentifier::addClauses(const NIdentifier &lhs, SatStaticAnalyzer &context) const {
+void NIdentifier::addClauses(const NIdentifier &lhs, IncrementalSatStaticAnalyzer &context) const {
     context.addClauses(lhs, *this);
 }
 
 // map call arguments
-void NIdentifier::processCallInput(unsigned int inputId, SatStaticAnalyzer &context) {
+void NIdentifier::processCallInput(unsigned int inputId, IncrementalSatStaticAnalyzer &context) {
     const string callFunctionName = context.getCurrentCall();
 
     FunctionDeclaration *calledFunction = context.getFunction(callFunctionName);
@@ -87,7 +87,7 @@ void NIdentifier::processCallInput(unsigned int inputId, SatStaticAnalyzer &cont
 }
 
 // map call outputs
-void NIdentifier::processCallOutput(unsigned int inputId, SatStaticAnalyzer &context) {
+void NIdentifier::processCallOutput(unsigned int inputId, IncrementalSatStaticAnalyzer &context) {
     const string callFunctionName = context.getCurrentCall();
 
     FunctionDeclaration *calledFunction = context.getFunction(callFunctionName);
@@ -111,7 +111,7 @@ void NIdentifier::processCallOutput(unsigned int inputId, SatStaticAnalyzer &con
     }
 }
 
-void NInteger::processCallInput(unsigned int inputId, SatStaticAnalyzer &context) {
+void NInteger::processCallInput(unsigned int inputId, IncrementalSatStaticAnalyzer &context) {
     const string callFunctionName = context.getCurrentCall();
 
     FunctionDeclaration *calledFunction = context.getFunction(callFunctionName);
