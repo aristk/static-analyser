@@ -34,7 +34,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 include_directories(${cryptominisat5_SOURCE_DIR}/src)
 
-set(SOURCE_FILES analyzer/incSatAnalyzer.cpp analyzer/node.cpp analyzer/variableName.cpp core.cpp ${FlexOutput} ${BisonOutput})
+set(SOURCE_FILES analyzer/incSatAnalyzer.cpp analyzer/node.cpp analyzer/variableName.cpp core.cpp ${FlexOutput}
+        ${BisonOutput} analyzer/SatStaticAnalyzer.cpp)
 
 set(Z3_FOUND 0)
 

@@ -140,10 +140,11 @@ public:
 
     void mapMethodCall(const NMethodCall &methodCall, const NIdentifier &output);
 
-    vector<pair<int, unsigned int> > getAnswers() {
+    virtual vector<pair<int, unsigned int> > getAnswers() {
         return answers;
     };
-    void updateAnswers(const string &opName, FullVariableName &keyLhs, const NIdentifier &lhs);
+
+    virtual void updateAnswers(const string &opName, FullVariableName &keyLhs, const NIdentifier &lhs);
 
     const string getCurrentCall() {
         if(callStack.empty()){
@@ -172,6 +173,10 @@ public:
             throw FunctionIsNotDefined();
         }
         return functions.at(name).get();
+    }
+
+    bool isTopLevelCall() const {
+        return !callStack.empty();
     }
 
     void addTrueOutput(const NIdentifier &variableName);

@@ -1,6 +1,6 @@
 #include <iostream>
 #include "analyzer/node.h"
-#include "analyzer/incSatAnalyzer.hpp"
+#include "analyzer/SatStaticAnalyzer.hpp"
 #include "core.hpp"
 
 using namespace std;
@@ -28,7 +28,7 @@ vector<pair<int, unsigned int> > parseAndAnalyze(const char *fileName) {
     if (programBlock == NULL) {
         throw isParserCrashed();
     }
-    unique_ptr<IncrementalSatStaticAnalyzer> analyzer(new IncrementalSatStaticAnalyzer());
+    unique_ptr<SatStaticAnalyzer> analyzer(new SatStaticAnalyzer());
     analyzer->addClauses(*programBlock);
     return analyzer->getAnswers();
 };
