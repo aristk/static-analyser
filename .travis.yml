@@ -2,7 +2,10 @@ language: cpp
 
 os:
   - osx
-  
+
+compiler:
+  - clang
+
 matrix:
   include:
     - os: osx
