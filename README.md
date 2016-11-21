@@ -38,6 +38,14 @@ func foo(a, b) {
 7. We could not have assignments or field of structure as function argument.
 8. Variables names are strings.
 
+## Static analyses
+Main intension of static analyses is to find not trivial constant values that come from comparisions. For example, in the following example, variable X will be always equal to 1:
+```
+Y = Z
+X = Y == Z
+```
+Due to function invocations this task is not very simple.
+
 ## Scanner and Parser
 Easiest, fastest and widely used way to create parsers for new languages is flex/bison. To create a rough parser for 
 the language an adaptation of [Toy LLVM compiler](http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/) 
