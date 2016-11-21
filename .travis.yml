@@ -27,6 +27,7 @@ addons:
 
 before_script:
   - cd "${TRAVIS_BUILD_DIR}"
+  - cmake . -Bbuild
 
 script:
-  - mkdir build && cd build && cmake -DCOVERALLS=ON -DCMAKE_BUILD_TYPE=Debug .. && cmake --build . && cmake --build . --target coveralls
+  - cmake --build build
