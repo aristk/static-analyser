@@ -1,4 +1,11 @@
 language: cpp
 
+dist: trusty
+
+addons:
+  apt:
+    packages:
+      - cmake
+
 script:
   - mkdir build && cd build && cmake -DCOVERALLS=ON -DCMAKE_BUILD_TYPE=Debug .. && cmake --build . && cmake --build . --target coveralls
