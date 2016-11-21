@@ -1,3 +1,7 @@
+<a href="https://scan.coverity.com/projects/aristk-static-analyser">
+  <img alt="Coverity Scan Build Status"
+       src="https://scan.coverity.com/projects/10890/badge.svg"/>
+</a>
 # A Static Analyser for simple dynamic language
 Given a dynamic language (i.e. variables are used without declarations) that is described in following section.
 Goal is to create simple static analyser for this language. 
