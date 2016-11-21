@@ -1,19 +1,7 @@
 language: cpp
 
-dist: trusty
-
-install:
-  - sudo apt-get update -qq
-
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - clang-3.7
-      - g++-5
-      - gcc-5
-      - cmake
+os:
+  - osx
 
 script:
   - mkdir build && cd build && cmake -DCOVERALLS=ON -DCMAKE_BUILD_TYPE=Debug .. && cmake --build . && cmake --build . --target coveralls
