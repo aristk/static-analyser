@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <algorithm>
 #include "analyzer/node.h"
 #include "incSatAnalyzer.hpp"
 
