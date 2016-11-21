@@ -2,8 +2,13 @@ language: cpp
 
 dist: trusty
 
+install:
+  - sudo apt-get update -qq
+
 addons:
   apt:
+    sources:
+      - ubuntu-toolchain-r-test
     packages:
       - cmake
 
