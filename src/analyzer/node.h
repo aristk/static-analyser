@@ -2,6 +2,7 @@
 #include <vector>
 #include <typeinfo>
 #include <map>
+#include <memory>
 
 #ifndef _NODE_H_
 #define _NODE_H_
