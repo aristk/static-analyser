@@ -1,6 +1,5 @@
 language: cpp
 
-sudo: false
 dist: trusty
 
 install:
