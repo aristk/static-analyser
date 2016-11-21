@@ -28,6 +28,7 @@ install:
 before_script:
   - cd "${TRAVIS_BUILD_DIR}"
   - cmake . -Bbuild
+  - cmake --build build
 
 script:
-  - cmake --build build
+  - cd "${TRAVIS_BUILD_DIR}/tests" && ../build/tests/runUnitTests
