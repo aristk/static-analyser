@@ -1,31 +1,19 @@
 language: cpp
 
-sudo: required
 dist: trusty
+
+install:
+  - sudo apt-get update -qq
 
 addons:
   apt:
     sources:
-    # add PPAs with more up-to-date toolchains
-    - ubuntu-toolchain-r-test
-    - llvm-toolchain-precise-3.6
+      - ubuntu-toolchain-r-test
     packages:
-    # install toolchains
-    - gcc-5
-    - g++-5
-    - clang-3.6
-
-install:
-  - |
-    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-      if [[ -z "$(ls -A ${DEPS_DIR}/cmake/bin)" ]]; then
-        CMAKE_URL="https://cmake.org/files/v3.6/cmake-3.6.2-Linux-x86_64.tar.gz"
-        mkdir -p cmake && travis_retry wget --no-check-certificate --quiet -O - "${CMAKE_URL}" | tar --strip-components=1 -xz -C cmake
-      fi
-      export PATH="${DEPS_DIR}/cmake/bin:${PATH}"
-    else
-      if ! brew ls --version cmake &>/dev/null; then brew install cmake; fi
-    fi
+      - clang-3.7
+      - g++-5
+      - gcc-5
+      - cmake
 
 script:
   - mkdir build && cd build && cmake -DCOVERALLS=ON -DCMAKE_BUILD_TYPE=Debug .. && cmake --build . && cmake --build . --target coveralls
