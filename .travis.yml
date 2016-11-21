@@ -1,9 +1,18 @@
 language: cpp
 
+sudo: false
 dist: trusty
 
 install:
   - sudo apt-get update -qq
+   - |
+    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+      if [[ -z "$(ls -A ${DEPS_DIR}/cmake/bin)" ]]; then
+        CMAKE_URL="https://cmake.org/files/v3.6/cmake-3.6.2-Linux-x86_64.tar.gz"
+        mkdir -p cmake && travis_retry wget --no-check-certificate --quiet -O - "${CMAKE_URL}" | tar --strip-components=1 -xz -C cmake
+      fi
+      export PATH="${DEPS_DIR}/cmake/bin:${PATH}"
+    fi
 
 addons:
   apt:
