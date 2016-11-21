@@ -1,16 +1,6 @@
 language: cpp
 
-os:
-  - linux
-#  - osx
-
-matrix:
-  include:
-    - os: linux
-      dist: trusty
-      sudo: required
-#    - os: osx
-#      osx_image: xcode8.2
+dist: trusty
 
 install:
 #  - sudo apt-get update -qq
@@ -25,15 +15,15 @@ install:
       export PATH="${DEPS_DIR}/cmake/bin:${PATH}"
     fi
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - clang-3.7
-      - g++-5
-      - gcc-5
-      - cmake
+#addons:
+#  apt:
+#    sources:
+#      - ubuntu-toolchain-r-test
+#    packages:
+#      - clang-3.7
+#      - g++-5
+#      - gcc-5
+#      - cmake
 
 before_script:
   - cd "${TRAVIS_BUILD_DIR}"

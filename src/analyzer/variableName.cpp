@@ -4,7 +4,8 @@
 #include "variableName.hpp"
 
 std::ostream& operator<<(std::ostream& os, const FullVariableName& obj) {
-    os << get<0>(obj) << ".";
+    os << get<0>(obj);
+    os << ".";
     string field = getVariableField(obj);
     string name = getVariableName(obj);
     if (field != "") {
