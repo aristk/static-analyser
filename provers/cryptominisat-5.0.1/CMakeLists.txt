@@ -400,7 +400,7 @@ endmacro()
 # -----------------------------------------------------------------------------
 # Look for python
 # -----------------------------------------------------------------------------
-option(ENABLE_PYTHON_INTERFACE "Enable Python interface" ON)
+option(ENABLE_PYTHON_INTERFACE "Enable Python interface" OFF)
 
 if (STATICCOMPILE)
     set(ENABLE_PYTHON_INTERFACE OFF)
