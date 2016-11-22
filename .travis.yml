@@ -15,6 +15,25 @@ install:
       export PATH="${DEPS_DIR}/cmake/bin:${PATH}"
     fi
 
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "gY2yxXszR9V2Zqyy1SGUrFbBL1U/z1MncByfYdGvYSrIy5AUzcmQBAIvwSpW+UCSX/2maYo2IP4VHKSM5fcmb9pUqwGyMBe5wU2UtFFtEozpJHGHLKmBxYBNQPfJ8dXf+HVSXIC02uMNeHY3xEU18u3OeyMETM2u6Boo6Q1f/eDVd0wOBiQ5nkl2Hs4MIubgQehZZdXpMtPfnXQ7q9Tso99+HxKa7PfvUuEzJgvYzzdoCw2ht0BGrgA4yYbFi33f82Ak+Mk85cQmYA/okd4b2frfeqQsNFo00k7rxvKBgWnUVljRy24lfcYhMKa68LnPd2qlJBa1B3450MbIWRSlMtXHSqyJ59ofU4SD0bghkiQ0otikA0gvDFq77Cswh6KyLyfJHSYcH0oqr2Yu9XMKznS9oRpc7jhDEl4edWckuID5iVgerQwIFC5sHPzitPoWJmo5Yg5tsJgrJ0y0CpuamCYoj+T4TwesApbjJLTh1mmM6YiXRO59mkYdQOxZGvQVOJOBk+KFC8uY3DpkvzMNABp5Ccc2kOqnufhaUhuq0r7auFXYWbFdegEemQeuQ7LHJ+tjjY31P7caJwCnhFC5FJ0c4E7IkgVx8rkuliLtiAENeSMa75A7mxpfB1en9zhERywYNEfbKEED5DvWSUiB3+I8H4neEmzXQvMZYWjjKSQ="
+
+before_install:
+      - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+
+addons:
+  coverity_scan:
+    project:
+      name: "aristk/static-analyser"
+      description: "Build submitted via Travis CI"
+    notification_email: aristkojevnikov@gmail.com
+    build_command_prepend: "cmake"
+    build_command:   "make"
+    branch_pattern: master
+
 #addons:
 #  apt:
 #    sources:
