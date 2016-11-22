@@ -19,5 +19,6 @@ ELSE()
 ENDIF()
 
 add_subdirectory(provers/cryptominisat-5.0.1)
+add_subdirectory(tests/libs/googletest-release-1.8.0)
 add_subdirectory(tests)
 add_subdirectory(src)

@@ -1,7 +1,6 @@
 ################################
 # GTest
 ################################
-add_subdirectory(libs/googletest-release-1.8.0)
 enable_testing()
 include_directories(
         ${gmock_SOURCE_DIR}/include
@@ -13,6 +12,10 @@ include_directories(
         ################################
 # Unit Tests
 ################################
+if (COVERAGE)
+    add_cxx_flag("--coverage")
+endif()
+
 # Add test cpp file
 add_executable( runUnitTests simpleGoogleTest.cpp)
 # Link test executable against gtest & gtest_main
