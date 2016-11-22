@@ -37,13 +37,6 @@ include_directories(${cryptominisat5_SOURCE_DIR}/src)
 set(SOURCE_FILES analyzer/incSatAnalyzer.cpp analyzer/node.cpp analyzer/variableName.cpp core.cpp ${FlexOutput}
         ${BisonOutput} analyzer/SatStaticAnalyzer.cpp)
 
-set(Z3_FOUND 0)
-
-if (Z3_FOUND)
-    include_directories(${Z3_SOURCE_DIR}/src/api)
-    set(LIBS ${LIBS} libz3)
-    set(SOURCE_FILES ${SOURCE_FILES} analyzer/smtAnalyzer.cpp analyzer/SatStaticAnalyzer.cpp analyzer/SatStaticAnalyzer.hpp)
-endif()
 
 add_library(core ${SOURCE_FILES})
 add_executable(staticAnalyzer main.cpp)
@@ -52,3 +45,6 @@ set(LIBS core libcryptominisat5)
 
 target_link_libraries(staticAnalyzer ${LIBS})
 
+if (COVERAGE)
+    add_cxx_flag("--coverage")
+endif()

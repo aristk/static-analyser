@@ -4,7 +4,7 @@ project(staticAnalyzerRoot)
 
 set(CMAKE_CXX_STANDARD 11)
 
-#set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(CMAKE_MACOSX_RPATH 1)
 
@@ -18,6 +18,6 @@ ELSE()
     message("Some other build type.")
 ENDIF()
 
-add_subdirectory(tests)
 add_subdirectory(provers/cryptominisat-5.0.1)
+add_subdirectory(tests)
 add_subdirectory(src)

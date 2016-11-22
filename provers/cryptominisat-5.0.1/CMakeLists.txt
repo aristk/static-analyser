@@ -203,7 +203,7 @@ endif()
 option(IPASIR "Also build IPASIR" OFF)
 
 option(COVERAGE "Build with coverage check" OFF)
-if (COVERAGE)
+if (COVERAGE_CMM)
     add_cxx_flag("--coverage")
 endif()
 

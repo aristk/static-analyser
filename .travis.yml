@@ -2,6 +2,27 @@ language: cpp
 
 dist: trusty
 
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "YKoV4dlQyiOqsK519asrvmo3g74oUaUcS5BPzAt9/X+R0YHKQer2iAd5wf/bhmRxYY1zKOLt4RfoWD6JUrVH88gHIRDS6M5c4cxk9oKxEK28AU9erkbODqT3KMUm7LJo+MBIgOddzj1GMbagJ19vO16DgN/7mGN3RNf08kVYKomyU2I9FxNavSuPSMYMIzN8qt8ro2K/ytaNzlY/etWpCEyCmhJpoDQ6la5qB4i7WJ7SbYHUH90eixfOAeeXQsQl0U0+C8mgKj92u0k9pDktAKqMBiB/YkPGCIgU6XGOowmD09G9lQIGgpt36vtfDakJ89p4O3F46rN7sDu/p+9McdBzHw0BG1HmyKGgiD0A5OiScxY8bckF5JiIh+M0mfGS77x1IOI+77Xp610yYN8Zdfu1wrG+Z3YUxxIJusH8ue50oFXZNrflgIZ5ff+uCXTcnHiq/roUK2xgdgTqYb2jJdgz9GBeCIsjcRe2Jk3XbpAnOo4GSaIPl11mqPaSloSplc6GBJZ1un0rBm6wpPDMxO8ukyrN2Jy80V44GSFFwMuPUKi2w+RtHMug/W2XBedjLJ5jQti3diOPJRp4vai2CFTSEkA3WWmDSM3fnXilthkV0RFu+0ou3yfyMftNYR+NcHhwtoBskpl2XPsCe7vpVMjQYYa3s675wW11IyuT2lQ="
+
+addons:
+  coverity_scan:
+    project:
+      name: "aristk/static-analyser"
+      description: "Build submitted via Travis CI"
+    build_command_prepend: "cmake"
+    build_command:   "make -j 4"
+    branch_pattern: coverity_scan
+
+before_install:
+  # coverity
+  - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+  # codecov
+  - pip install --user codecov
+
 install:
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
   - mkdir -p "${DEPS_DIR}" && cd "${DEPS_DIR}"
@@ -14,28 +35,18 @@ install:
       export PATH="${DEPS_DIR}/cmake/bin:${PATH}"
     fi
 
-env:
-  global:
-   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-   #   via the "travis encrypt" command using the project repo's public key
-   - secure: "YKoV4dlQyiOqsK519asrvmo3g74oUaUcS5BPzAt9/X+R0YHKQer2iAd5wf/bhmRxYY1zKOLt4RfoWD6JUrVH88gHIRDS6M5c4cxk9oKxEK28AU9erkbODqT3KMUm7LJo+MBIgOddzj1GMbagJ19vO16DgN/7mGN3RNf08kVYKomyU2I9FxNavSuPSMYMIzN8qt8ro2K/ytaNzlY/etWpCEyCmhJpoDQ6la5qB4i7WJ7SbYHUH90eixfOAeeXQsQl0U0+C8mgKj92u0k9pDktAKqMBiB/YkPGCIgU6XGOowmD09G9lQIGgpt36vtfDakJ89p4O3F46rN7sDu/p+9McdBzHw0BG1HmyKGgiD0A5OiScxY8bckF5JiIh+M0mfGS77x1IOI+77Xp610yYN8Zdfu1wrG+Z3YUxxIJusH8ue50oFXZNrflgIZ5ff+uCXTcnHiq/roUK2xgdgTqYb2jJdgz9GBeCIsjcRe2Jk3XbpAnOo4GSaIPl11mqPaSloSplc6GBJZ1un0rBm6wpPDMxO8ukyrN2Jy80V44GSFFwMuPUKi2w+RtHMug/W2XBedjLJ5jQti3diOPJRp4vai2CFTSEkA3WWmDSM3fnXilthkV0RFu+0ou3yfyMftNYR+NcHhwtoBskpl2XPsCe7vpVMjQYYa3s675wW11IyuT2lQ="
-
-before_install:
-      - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
-
-addons:
-  coverity_scan:
-    project:
-      name: "aristk/static-analyser"
-      description: "Build submitted via Travis CI"
-    build_command_prepend: "cmake"
-    build_command:   "make -j 4"
-    branch_pattern: coverity_scan
-
 before_script:
   - cd "${TRAVIS_BUILD_DIR}"
-  - cmake . -Bbuild
+  - cmake . -Bbuild -DCOVERAGE
   - cmake --build build
 
 script:
   - cd "${TRAVIS_BUILD_DIR}/tests" && ../build/tests/runUnitTests
+  # codecov
+  - cd "${TRAVIS_BUILD_DIR}"
+  - ./get_code_cov.sh
+  - codecov
+
+after_success:
+  # codecov
+  - bash <(curl -s https://codecov.io/bash)
