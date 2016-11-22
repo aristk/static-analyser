@@ -37,7 +37,7 @@ install:
 
 before_script:
   - cd "${TRAVIS_BUILD_DIR}"
-  - cmake . -Bbuild -DCOVERAGE
+  - cmake . -Bbuild -DCOVERAGE=true
   - cmake --build build
 
 script:
