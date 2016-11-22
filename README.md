@@ -1,4 +1,4 @@
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![license: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![linux build](https://travis-ci.org/aristk/static-analyser.svg?branch=master)](https://travis-ci.org/aristk/static-analyser)
 <a href="https://scan.coverity.com/projects/aristk-static-analyser">
   <img alt="Coverity Scan Build Status"
