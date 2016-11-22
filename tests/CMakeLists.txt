@@ -14,10 +14,6 @@ include_directories(
 # Unit Tests
 ################################
 # Add test cpp file
-if (COVERAGE)
-    add_cxx_flag("--coverage")
-endif()
-
 add_executable( runUnitTests simpleGoogleTest.cpp)
 # Link test executable against gtest & gtest_main
 target_link_libraries(runUnitTests gtest gtest_main core libcryptominisat5)
