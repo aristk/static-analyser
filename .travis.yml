@@ -29,7 +29,7 @@ addons:
       name: "aristk/static-analyser"
       description: "Build submitted via Travis CI"
     notification_email: aristkojevnikov@gmail.com
-    build_command_prepend: "cmake"
+    build_command_prepend: "cmake ."
     build_command:   "make -j 4"
     branch_pattern: coverity_scan
 
