@@ -7,15 +7,15 @@
 #ifndef STATICANALYZERROOT_SATSTATICANALYZER_HPP
 #define STATICANALYZERROOT_SATSTATICANALYZER_HPP
 
-// TODO: inheritance should be reverse
+// TODO(arist): inheritance should be reverse
 class SatStaticAnalyzer : public IncrementalSatStaticAnalyzer {
     // key + operator name + position in the file
     vector<tuple<FullVariableNameOccurrence, string, int> > variablesToCheck;
 public:
     SatStaticAnalyzer(): IncrementalSatStaticAnalyzer(), variablesToCheck() { }
 
-    virtual void updateAnswers(const string &opName, FullVariableName &keyLhs, const NIdentifier &lhs);
+    void updateAnswers(const string &opName, FullVariableName &keyLhs, const NIdentifier &lhs) override;
 
-    virtual vector<pair<int, unsigned int> > getAnswers();
+    vector<pair<int, unsigned int> > getAnswers() override;
 };
 #endif //STATICANALYZERROOT_SATSTATICANALYZER_HPP

@@ -13,7 +13,7 @@ extern FILE *yyin;
 vector<pair<int, unsigned int> > parseAndAnalyze(const char *fileName) {
 
     FILE* file = fopen(fileName,"r");
-    if(file == NULL) {
+    if(file == nullptr) {
         throw couldNotOpenFile(fileName);
     }
 
@@ -25,7 +25,7 @@ vector<pair<int, unsigned int> > parseAndAnalyze(const char *fileName) {
     yyparse();
     fclose(file);
 
-    if (programBlock == NULL) {
+    if (programBlock == nullptr) {
         throw isParserCrashed();
     }
     unique_ptr<SatStaticAnalyzer> analyzer(new SatStaticAnalyzer());

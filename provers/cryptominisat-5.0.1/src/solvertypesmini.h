@@ -43,7 +43,7 @@ class Lit
 public:
     Lit() : x(var_Undef<<1) {}   // (lit_Undef)
     explicit Lit(uint32_t var, bool is_inverted) :
-        x(var + var + is_inverted)
+        x(var + var + static_cast<unsigned int>(is_inverted))
     {}
 
     const uint32_t& toInt() const { // Guarantees small, positive integers suitable for array indexing.
@@ -53,14 +53,14 @@ public:
         return Lit(x ^ 1);
     }
     Lit  operator^(const bool b) const {
-        return Lit(x ^ (uint32_t)b);
+        return Lit(x ^ static_cast<uint32_t>(b));
     }
     Lit& operator^=(const bool b) {
-        x ^= (uint32_t)b;
+        x ^= (static_cast<uint32_t>(b));
         return *this;
     }
     bool sign() const {
-        return x & 1;
+        return (x & 1) != 0u;
     }
     uint32_t  var() const {
         return x >> 1;
@@ -111,8 +111,9 @@ inline std::ostream& operator<<(std::ostream& co, const std::vector<Lit>& lits)
         co << lits[i];
 
         if (i != lits.size()-1)
-            co << " ";
+ {            co << " ";
     }
+}
 
     return co;
 }
@@ -128,16 +129,16 @@ public:
     explicit lbool(uint8_t v) : value(v) { }
 
     lbool()       : value(0) { }
-    explicit lbool(bool x) : value(!x) { }
+    explicit lbool(bool x) : value(static_cast<uint8_t>(static_cast<uint8_t>(x)) == 0u) { }
 
     bool  operator == (lbool b) const {
-        return ((b.value & 2) & (value & 2)) | (!(b.value & 2) & (value == b.value));
+        return ((b.value & 2) & (value & 2)) | (!(b.value & 2) & (static_cast<int>(value) == static_cast<int>(b.value)));
     }
     bool  operator != (lbool b) const {
         return !(*this == b);
     }
     lbool operator ^  (bool  b) const {
-        return lbool((uint8_t)(value ^ (uint8_t)b));
+        return lbool((uint8_t)(value ^ static_cast<uint8_t>(b)));
     }
 
     lbool operator && (lbool b) const {
@@ -161,18 +162,20 @@ public:
 
 inline lbool boolToLBool(const bool b)
 {
-    if (b)
+    if (b) {
         return l_True;
-    else
+    }
+    else {
         return l_False;
+    }
 }
 
 inline std::ostream& operator<<(std::ostream& cout, const lbool val)
 {
-    if (val == l_True) cout << "l_True";
-    if (val == l_False) cout << "l_False";
-    if (val == l_Undef) cout << "l_Undef";
-    return cout;
+    if (val == l_True) { cout << "l_True"; }
+    if (val == l_False) { cout << "l_False"; }
+    if (val == l_Undef) { cout << "l_Undef"; }
+    return cout; // namespace CMSat
 }
 
 }

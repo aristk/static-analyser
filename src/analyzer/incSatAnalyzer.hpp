@@ -1,11 +1,11 @@
 #include "cryptominisat.h"
 #include "node.h"
 #include <unordered_set>
-#include <vector>
-#include <map>
 #include <list>
-#include <math.h>
 #include <cassert>
+#include <cmath>
+#include <map>
+#include <vector>
 
 class NBlock;
 using namespace CMSat;
@@ -13,7 +13,7 @@ using namespace std;
 
 class FunctionDeclaration {
     // std::unordered_set allow fast check that string is an input
-    // TODO: best solution is to use boost::bimap here
+    // TODO(arist): best solution is to use boost::bimap here
     unordered_set<string> inputsMap;
     vector<string> inputs;
 
@@ -79,7 +79,7 @@ public:
 
 class StaticAnalyzer {
 public:
-    virtual ~StaticAnalyzer() {}
+    virtual ~StaticAnalyzer() = default;
 };
 
 class IncrementalSatStaticAnalyzer : public StaticAnalyzer {
@@ -133,7 +133,7 @@ public:
     IncrementalSatStaticAnalyzer() : solver(new SATSolver), variables(), variableOccurrences(), callStack(),
                           functions(), currentFunctionName(), answers() {
         // we need at least one bit for boolean variable
-        numOfBitsPerInt = (unsigned int) ceil(log2(max((unsigned int) 2, NInteger::differentIntCount)));
+        numOfBitsPerInt = static_cast<unsigned int>( ceil(log2(max(static_cast<unsigned int>( 2), NInteger::differentIntCount))));
     }
 
     void addInputs(const VariableList &inputs, const NIdentifier &functionName);
@@ -167,15 +167,17 @@ public:
     }
 
     const string getParentCall() {
-        if (callStack.size() == 1)
+        if (callStack.size() == 1) {
             return currentFunctionName;
-        list<string>::reverse_iterator rit=callStack.rbegin();
+}
+        auto rit=callStack.rbegin();
         ++rit;
-        if(rit != callStack.rend())
+        if(rit != callStack.rend()) {
             return *rit;
-        else
+        }  {
             return "";
-    }
+
+}}
 
     FunctionDeclaration *getFunction(const string &name) {
         if (functions.count(name) == 0) {
@@ -192,7 +194,7 @@ public:
 
     virtual bool isConstant(int &returnValue, FullVariableNameOccurrence &nIdentifier);
 
-    virtual ~IncrementalSatStaticAnalyzer() {}
+    ~IncrementalSatStaticAnalyzer() override = default;
 
     unsigned int getRhsSatVariable(FullVariableNameOccurrence &key);
 

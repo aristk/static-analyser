@@ -27,11 +27,11 @@ THE SOFTWARE.
 #define CRYPTOMINISAT_VERSION_MINOR @PROJECT_VERSION_MINOR@
 #define CRYPTOMINISAT_VERSION_PATCH @PROJECT_VERSION_PATCH@
 
-#include <vector>
+#include "solvertypesmini.h"
+#include <atomic>
 #include <iostream>
 #include <utility>
-#include <atomic>
-#include "solvertypesmini.h"
+#include <vector>
 
 namespace CMSat {
     struct CMSatPrivateData;
@@ -42,17 +42,17 @@ namespace CMSat {
     #endif
     {
     public:
-        SATSolver(void* config = NULL
-        , std::atomic<bool>* interrupt_asap = NULL
+        explicit SATSolver(void* config = nullptr
+        , std::atomic<bool>* interrupt_asap = nullptr
         );
         ~SATSolver();
         unsigned nVars() const;
         bool add_clause(const std::vector<Lit>& lits);
         bool add_xor_clause(const std::vector<unsigned>& vars, bool rhs);
         void new_var();
-        void new_vars(const size_t n);
-        lbool solve(const std::vector<Lit>* assumptions = 0);
-        lbool simplify(const std::vector<Lit>* assumptions = 0);
+        void new_vars(size_t n);
+        lbool solve(const std::vector<Lit>* assumptions = nullptr);
+        lbool simplify(const std::vector<Lit>* assumptions = nullptr);
         const std::vector<lbool>& get_model() const;
         const std::vector<Lit>& get_conflict() const;
         bool okay() const;
@@ -100,6 +100,6 @@ namespace CMSat {
     private:
         CMSatPrivateData *data;
     };
-}
+} // namespace CMSat
 
 #endif //__CRYPTOMINISAT4_H__

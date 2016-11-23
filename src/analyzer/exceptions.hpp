@@ -2,7 +2,7 @@ using namespace std;
 
 class notNFunctionDeclaration: public exception
 {
-    virtual const char* what() const throw()
+    const char* what() const throw() override
     {
         return "Root item is not NFunctionDeclaration.";
     }
@@ -10,7 +10,7 @@ class notNFunctionDeclaration: public exception
 
 class NotNVariableDeclaration: public exception
 {
-    virtual const char* what() const throw()
+    const char* what() const throw() override
     {
         return "Argument of the function is not NVariableDeclaration.";
     }
@@ -19,35 +19,35 @@ class NotNVariableDeclaration: public exception
 class isParserCrashed: public exception
 {
 public:
-    virtual const char* what() const throw()
+    const char* what() const throw() override
     {
         return "Result of parsing is NULL.";
     }
 };
 
 class WrongBinaryOperator: public exception {
-    virtual const char* what() const throw()
+    const char* what() const throw() override
     {
         return "Only == and != could be used.";
     }
 };
 
 class WrongFunctionStatement: public exception {
-    virtual const char* what() const throw()
+    const char* what() const throw() override
     {
         return "In function we could use only variable assignment or procedure call";
     }
 };
 
 class WrongFunctionArgument: public exception {
-    virtual const char* what() const throw()
+    const char* what() const throw() override
     {
         return "Argument of the function is not single variable.";
     }
 };
 
 class FunctionIsNotDefined: public exception {
-    virtual const char* what() const throw()
+    const char* what() const throw() override
     {
         return "Function is not defined.";
     }
@@ -55,36 +55,36 @@ class FunctionIsNotDefined: public exception {
 
 class FunctionDefinedTwice: public exception {
     string output;
-    virtual const char* what() const throw() {
+    const char* what() const throw() override {
         return output.c_str();
     }
 public:
-    FunctionDefinedTwice(const string& name):
+    explicit FunctionDefinedTwice(const string& name):
             output("Function " + name + " defined two time.")
     { }
 
 };
 
 class InputIsAStruct: public exception {
-    virtual const char* what() const throw() {
+    const char* what() const throw() override {
         return "Integer input argument is used as a struct.";
     }
 };
 
 class SatVariableIsNotDefined: public exception {
-    virtual const char* what() const throw() {
+    const char* what() const throw() override {
         return "Current variable was not used yet.";
     }
 };
 
 class SatVariableAreAlreadyDefined: public exception {
-    virtual const char* what() const throw() {
+    const char* what() const throw() override {
         return "Current variable was already used.";
     }
 };
 
 class differentNumberOfArgsInFunctionCall: public exception {
-    virtual const char* what() const throw() {
+    const char* what() const throw() override {
         return "Call of function has different number of arguments with respect to declaration.";
     }
 };
@@ -92,11 +92,11 @@ class differentNumberOfArgsInFunctionCall: public exception {
 
 class recursiveCall: public exception {
     string output;
-    virtual const char* what() const throw() {
+    const char* what() const throw() override {
         return output.c_str();
     }
 public:
-    recursiveCall(const string& name):
+    explicit recursiveCall(const string& name):
             output("Function " + name + "called recursively")
     { }
 
@@ -104,12 +104,12 @@ public:
 
 class functionIsNotImplemented: public exception {
     string output;
-    virtual const char* what() const throw() {
+    const char* what() const throw() override {
         return output.c_str();
     }
 public:
     functionIsNotImplemented(const string& name, const string& input):
-        output(name + " method for \"" + input + "\" is not implemented")
+        output(name + R"( method for ")" + input + R"(" is not implemented)")
     { }
 
 };
@@ -117,39 +117,39 @@ public:
 class couldNotOpenFile: public exception {
     string output;
 
-    virtual const char *what() const throw() {
+    const char *what() const throw() override {
         return output.c_str();
     }
 
 public:
-    couldNotOpenFile(const char *fileName) : output("couldn’t open ") {
+    explicit couldNotOpenFile(const char *fileName) : output("couldn’t open ") {
         output.append(fileName);
     }
 };
 
 class isAlreadyAnInput: public exception {
     string output;
-    virtual const char* what() const throw() {
+    const char* what() const throw () override {
         return output.c_str();
     }
 public:
-    isAlreadyAnInput(const string& input) :
-            output("Variable \"" + input + "\" already defined as input") { }
+    explicit isAlreadyAnInput(const string& input) :
+            output(R"(Variable ")" + input + R"(" already defined as input)") { }
 };
 
 
 class parserError: public exception {
     string output;
-    virtual const char* what() const throw() {
+    const char* what() const throw() override {
         return output.c_str();
     }
 public:
-    parserError(const string& input) :
+    explicit parserError(const string& input) :
             output("Parser error: " + input) { }
 };
 
 class isWrongModel: public exception {
-    virtual const char* what() const throw() {
+    const char* what() const throw() override {
         return "Model could not be unsat.";
     }
 };
