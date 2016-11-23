@@ -1,8 +1,8 @@
-var columnDivs = new Array();
-var graph_data = new Array();
-var clDistrib = new Array();
-var simplificationPoints = new Array();
-var maxConflRestart = new Array();
+var columnDivs = [];
+var graph_data = [];
+var clDistrib = [];
+var simplificationPoints = [];
+var maxConflRestart = [];
 
 //while (true) {
 //setInterval(function(){myajax.makeGetRequest(500005960);}, 2000);
@@ -35,7 +35,7 @@ function selected_runID(runID) {
 
             columnDivs = response["columnDivs"];
             graph_data = response["graph_data"];
-            clDistrib = new Array();
+            clDistrib = [];
             simplificationPoints = response["simplificationPoints"];
             maxConflRestart = response["maxConflRestart"];
             print_all_graphs();

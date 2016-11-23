@@ -132,13 +132,13 @@ public:
     explicit lbool(bool x) : value(static_cast<uint8_t>(static_cast<uint8_t>(x)) == 0u) { }
 
     bool  operator == (lbool b) const {
-        return ((b.value & 2) & (value & 2)) | (!(b.value & 2) & (static_cast<int>(value) == static_cast<int>(b.value)));
+        return ((static_cast<int>(b.value) & 2) & (static_cast<int>(value) & 2)) | (!(static_cast<int>(b.value) & 2) & (static_cast<int>(value) == static_cast<int>(b.value)));
     }
     bool  operator != (lbool b) const {
         return !(*this == b);
     }
     lbool operator ^  (bool  b) const {
-        return lbool((uint8_t)(value ^ static_cast<uint8_t>(b)));
+        return lbool((uint8_t)(static_cast<int>(value) ^ static_cast<uint8_t>(b)));
     }
 
     lbool operator && (lbool b) const {
