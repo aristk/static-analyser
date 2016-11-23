@@ -1,0 +1,6 @@
+func bar() {
+   func foo() {
+      z = z == 2
+   }
+   x = x == 1
+}

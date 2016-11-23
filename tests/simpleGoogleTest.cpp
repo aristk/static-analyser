@@ -73,6 +73,10 @@ TEST(testCore, NegativeTestsAnalyzerExceptions) {
 
     ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), InputIsAStruct);
 
+    inputFileName = "test/globalVar.myprog";
+
+    ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), notNFunctionDeclaration);
+
     inputFileName = "test/structureInCall.myprog";
 
     ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), WrongFunctionArgument);
@@ -100,6 +104,14 @@ TEST(testCore, NegativeTestsAnalyzerExceptions) {
     inputFileName = "test/functionDefinedTwice.myprog" ;
 
     ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), FunctionDefinedTwice);
+
+    inputFileName = "test/nested.myprog" ;
+
+    ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), WrongFunctionStatement);
+
+    inputFileName = "test/doubleInput.myprog" ;
+
+    ASSERT_THROW(parseAndAnalyze(inputFileName.c_str()), isAlreadyAnInput);
 }
 
 // TODO: looks like crash of parser is due to one instance of it

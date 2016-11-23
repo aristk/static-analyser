@@ -16,15 +16,6 @@ class NotNVariableDeclaration: public exception
     }
 };
 
-class isParserCrashed: public exception
-{
-public:
-    const char* what() const throw() override
-    {
-        return "Result of parsing is NULL.";
-    }
-};
-
 class WrongBinaryOperator: public exception {
     const char* what() const throw() override
     {

@@ -1,0 +1,4 @@
+func bar() {
+    func foo() {}
+   x = p == t
+}
