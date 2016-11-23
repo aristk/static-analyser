@@ -374,8 +374,4 @@ void IncrementalSatStaticAnalyzer::mapMethodCall(const NMethodCall &methodCall, 
     }
 }
 
-unsigned int IncrementalSatStaticAnalyzer::getNumOfBitsPerInt() const {
-    return numOfBitsPerInt;
-}
-
 

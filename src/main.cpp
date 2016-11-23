@@ -1,7 +1,22 @@
+#include "core.hpp"
+#include <iostream>
 
-extern int core(int argc, char **argv);
+using namespace std;
 
 int main(int argc, char **argv)
 {
-    return core(argc, argv);
+    int returnValue = 0;
+    if(argc != 2) {
+        printf("usage: ./staticAnalyzer filename\n");
+        return 1;
+    }
+
+    try {
+        parseAndAnalyze(argv[1]);
+        } catch (exception& e) {
+            cerr << "Exception caught:" << endl;
+            cerr << e.what() << endl;
+            returnValue = 1;
+        }
+    return returnValue;
 }

@@ -1,4 +1,3 @@
-func bar() {
-    func foo() {}
+func bar(x, x) {
    x = p == t
 }

@@ -85,8 +85,6 @@ public:
 class IncrementalSatStaticAnalyzer : public StaticAnalyzer {
     // how many bits we need per integer (depends on int count from parser)
     unsigned int numOfBitsPerInt;
-public:
-    unsigned int getNumOfBitsPerInt() const;
 
 private:
 
